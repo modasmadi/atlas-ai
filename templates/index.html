@@ -1,1177 +1,197 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
-  <title>ATLAS • AI Workspace</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <title>محمود | مساعد الذكاء الاصطناعي</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
+
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    :root {
-      --bg-main: #020617;
-      --bg-card: #020617;
-      --bg-soft: #020617;
-      --accent: #38bdf8;
-      --border-soft: rgba(148, 163, 184, 0.3);
-      --text-main: #e5e7eb;
-      --text-soft: #94a3b8;
-      --danger: #ef4444;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
     body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: radial-gradient(circle at top, #0f172a 0, #020617 55%, #000 100%);
-      color: var(--text-main);
-      min-height: 100vh;
-    }
-    .hidden { display: none !important; }
-    .app-root {
+      background: #000000;
+      color: #fff;
+      font-family: "Cairo", sans-serif;
       min-height: 100vh;
       display: flex;
-      align-items: stretch;
-      justify-content: center;
-      padding: 12px;
+      flex-direction: column;
     }
-    .auth-wrapper {
-      max-width: 420px;
-      width: 100%;
-      margin: auto;
+
+    header {
+      background: #000;
+      border-bottom: 1px solid #181818;
+      padding: 16px;
+      text-align: center;
     }
-    .card {
-      background: radial-gradient(circle at top left, #0b1120 0, #020617 60%);
-      border: 1px solid rgba(148, 163, 184, 0.25);
-      border-radius: 18px;
-      padding: 18px 18px 20px;
-      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.7);
-      backdrop-filter: blur(16px);
+
+    header h1 {
+      font-size: 22px;
+      font-weight: 700;
     }
-    .card-header {
+
+    header p {
+      font-size: 12px;
+      opacity: 0.7;
+      margin-top: 4px;
+    }
+
+    .container {
+      flex: 1;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 16px;
       display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 10px;
+      flex-direction: column;
+      gap: 16px;
     }
-    .logo {
-      width: 38px;
-      height: 38px;
+
+    .chat-box {
+      background: #0a0a0a;
+      border: 1px solid #222;
       border-radius: 16px;
-      background: linear-gradient(135deg, var(--accent), #22c55e);
+      height: 480px;
       display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #020617;
-      font-weight: 800;
-      font-size: 20px;
-      box-shadow: 0 0 25px rgba(56, 189, 248, 0.8);
-    }
-    .logo-title { font-size: 18px; font-weight: 700; }
-    .logo-sub { font-size: 11px; color: var(--text-soft); }
-
-    .auth-title { font-size: 15px; font-weight: 600; margin-bottom: 4px; text-align: center; }
-    .auth-sub { font-size: 11px; color: var(--text-soft); text-align: center; margin-bottom: 14px; }
-
-    .field { margin-bottom: 10px; }
-    .label { font-size: 11px; color: var(--text-soft); margin-bottom: 3px; display: block; }
-    .input, .textarea {
-      width: 100%;
-      padding: 7px 9px;
-      border-radius: 10px;
-      border: 1px solid rgba(148, 163, 184, 0.3);
-      background: rgba(15, 23, 42, 0.95);
-      color: var(--text-main);
-      font-size: 12px;
-      outline: none;
-      transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
-    }
-    .input:focus, .textarea:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.6);
-      background: #020617;
-    }
-    .textarea { resize: none; min-height: 160px; }
-
-    .btn {
-      border: none;
-      border-radius: 11px;
-      padding: 7px 14px;
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 4px;
-      background: var(--accent);
-      color: #020617;
-      transition: background 0.15s, transform 0.1s, box-shadow 0.1s;
-      box-shadow: 0 12px 26px rgba(56, 189, 248, 0.4);
-    }
-    .btn:hover {
-      background: #22d3ee;
-      transform: translateY(-1px);
-      box-shadow: 0 14px 30px rgba(56, 189, 248, 0.6);
-    }
-    .btn:active {
-      transform: translateY(0);
-      box-shadow: 0 10px 22px rgba(56, 189, 248, 0.5);
-    }
-    .btn-danger {
-      background: var(--danger);
-      color: #fef2f2;
-      box-shadow: 0 10px 24px rgba(239, 68, 68, 0.6);
-    }
-    .btn-danger:hover { background: #f97373; }
-
-    .auth-footer { margin-top: 10px; font-size: 11px; color: var(--text-soft); text-align: center; }
-    .link { color: var(--accent); cursor: pointer; text-decoration: none; }
-    .link:hover { text-decoration: underline; }
-
-    /* APP LAYOUT */
-    .app-shell {
-      max-width: 1180px;
-      width: 100%;
-      display: grid;
-      grid-template-columns: 220px minmax(0, 1fr);
-      gap: 10px;
-      background: radial-gradient(circle at top left, #020617 0, #000 70%);
-      border-radius: 20px;
-      border: 1px solid rgba(148, 163, 184, 0.35);
-      box-shadow: 0 20px 60px rgba(15, 23, 42, 0.9);
+      flex-direction: column;
       overflow: hidden;
     }
-    @media (max-width: 840px) {
-      .app-shell { grid-template-columns: minmax(0, 1fr); }
-      .sidebar { flex-direction: row; overflow-x: auto; }
-      .sidebar-nav { display: flex; flex-direction: row; overflow-x: auto; }
-      .sidebar-nav button { white-space: nowrap; }
-    }
 
-    .sidebar {
-      background: linear-gradient(180deg, #020617 0, #020617 100%);
-      border-inline-end: 1px solid rgba(148, 163, 184, 0.35);
-      padding: 10px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-    .sidebar-header {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 4px;
-    }
-    .sidebar-nav {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      margin-top: 6px;
-      flex: 1;
-    }
-    .nav-btn {
-      border-radius: 9px;
-      padding: 6px 10px;
-      border: none;
-      background: transparent;
-      color: var(--text-soft);
-      font-size: 12px;
-      text-align: right;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      transition: background 0.15s, color 0.15s;
-    }
-    .nav-btn span { font-size: 10px; opacity: 0.8; }
-    .nav-btn.active {
-      background: var(--accent);
-      color: #020617;
+    .chat-header {
+      padding: 10px 14px;
+      border-bottom: 1px solid #111;
+      font-size: 14px;
       font-weight: 600;
-    }
-    .nav-btn:hover:not(.active) {
-      background: rgba(15, 23, 42, 0.95);
-      color: var(--text-main);
-    }
-    .sidebar-footer {
-      margin-top: 6px;
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
-      font-size: 10px;
-      color: var(--text-soft);
+      background: #000;
     }
 
-    .main-area { display: flex; flex-direction: column; min-height: 100%; }
-    .topbar {
-      padding: 8px 12px;
-      border-bottom: 1px solid rgba(148, 163, 184, 0.35);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: radial-gradient(circle at top, #020617 0, #020617 60%);
-    }
-    .topbar-title { font-size: 13px; font-weight: 600; }
-    .topbar-sub { font-size: 10px; color: var(--text-soft); margin-top: 2px; }
-    .topbar-user { font-size: 11px; color: var(--text-soft); text-align: left; }
-    .pill {
-      font-size: 10px;
-      padding: 4px 7px;
-      border-radius: 999px;
-      background: rgba(15, 23, 42, 0.9);
-      border: 1px solid rgba(148, 163, 184, 0.5);
-      color: var(--accent);
-    }
-
-    .main-content {
-      padding: 10px 12px;
+    .messages {
       flex: 1;
-      overflow: auto;
-      background: radial-gradient(circle at top, #020617 0, #020617 80%);
-    }
-
-    .grid { display: grid; gap: 10px; }
-    .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-    .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    @media (max-width: 900px) {
-      .grid-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    }
-    @media (max-width: 640px) {
-      .grid-3, .grid-2 { grid-template-columns: minmax(0, 1fr); }
-    }
-
-    .card-section {
-      background: rgba(15, 23, 42, 0.96);
-      border-radius: 14px;
-      padding: 10px;
-      border: 1px solid rgba(148, 163, 184, 0.35);
-      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.6);
-    }
-    .section-title { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
-    .section-sub { font-size: 11px; color: var(--text-soft); margin-bottom: 6px; }
-
-    .stat-main { font-size: 22px; font-weight: 700; margin-top: 4px; }
-    .stat-label { font-size: 10px; color: var(--text-soft); margin-top: 1px; }
-
-    .tag {
-      display: inline-block;
-      font-size: 10px;
-      padding: 2px 6px;
-      border-radius: 999px;
-      background: rgba(15, 23, 42, 0.9);
-      border: 1px solid rgba(148, 163, 184, 0.4);
-      margin-inline: 1px;
-      margin-top: 2px;
-    }
-
-    /* CHAT */
-    .chat-layout {
-      display: grid;
-      gap: 10px;
-      grid-template-columns: 210px minmax(0, 1fr);
-      height: calc(100vh - 150px);
-      max-height: 570px;
-    }
-    @media (max-width: 900px) {
-      .chat-layout { grid-template-columns: minmax(0, 1fr); height: auto; max-height: none; }
-    }
-    .chat-modes { display: flex; flex-direction: column; gap: 6px; height: 100%; }
-    .mode-btn {
-      border-radius: 9px;
-      border: none;
-      padding: 6px 9px;
-      background: rgba(15, 23, 42, 0.95);
-      color: var(--text-soft);
-      font-size: 11px;
-      text-align: right;
-      cursor: pointer;
-      transition: background 0.15s, color 0.15s, transform 0.1s;
-    }
-    .mode-btn.active {
-      background: var(--accent);
-      color: #020617;
-      font-weight: 600;
-      transform: translateY(-1px);
-    }
-    .mode-btn:hover:not(.active) {
-      background: rgba(15, 23, 42, 1);
-      color: var(--text-main);
-    }
-    .chat-window { display: flex; flex-direction: column; height: 100%; }
-    .chat-messages {
-      flex: 1;
+      padding: 14px;
       overflow-y: auto;
-      padding-right: 4px;
-      margin-bottom: 4px;
-    }
-    .bubble {
-      max-width: 80%;
-      border-radius: 16px;
-      padding: 7px 9px;
-      font-size: 11px;
-      margin-bottom: 4px;
-      line-height: 1.4;
-      white-space: pre-wrap;
-    }
-    .bubble.user {
-      margin-left: auto;
-      background: var(--accent);
-      color: #020617;
-      border-bottom-right-radius: 4px;
-    }
-    .bubble.assistant {
-      margin-right: auto;
-      background: rgba(15, 23, 42, 0.98);
-      border-bottom-left-radius: 4px;
-      border: 1px solid rgba(148, 163, 184, 0.3);
-    }
-    .chat-form {
-      display: flex;
-      align-items: flex-end;
-      gap: 6px;
-      border-top: 1px solid rgba(148, 163, 184, 0.4);
-      padding-top: 6px;
-    }
-    .chat-input {
-      flex: 1;
-      min-height: 32px;
-      max-height: 80px;
-      font-size: 11px;
+      font-size: 14px;
     }
 
-    /* NOTES */
-    .notes-layout {
-      display: grid;
-      gap: 10px;
-      grid-template-columns: 210px minmax(0, 1fr);
-      height: calc(100vh - 150px);
-      max-height: 570px;
+    .msg {
+      margin-bottom: 10px;
+      padding: 10px 14px;
+      border-radius: 14px;
+      max-width: 80%;
+      line-height: 1.6;
     }
-    @media (max-width: 900px) {
-      .notes-layout { grid-template-columns: minmax(0, 1fr); height: auto; max-height: none; }
+
+    .ai {
+      background: #1c1c1c;
+      margin-right: auto;
     }
-    .notes-list { display: flex; flex-direction: column; height: 100%; gap: 6px; }
-    .notes-scroll { flex: 1; overflow-y: auto; padding-right: 3px; }
-    .note-item {
-      width: 100%;
-      text-align: right;
-      padding: 6px 8px;
-      border-radius: 9px;
-      font-size: 11px;
+
+    .user {
+      background: #2563eb;
+      margin-left: auto;
+    }
+
+    .input-area {
+      padding: 10px;
+      background: #000;
+      border-top: 1px solid #111;
+      display: flex;
+      gap: 8px;
+    }
+
+    input {
+      flex: 1;
+      padding: 10px 12px;
+      border-radius: 999px;
+      border: 1px solid #333;
+      background: #050505;
+      color: #fff;
+      font-size: 14px;
+      outline: none;
+    }
+
+    button {
+      padding: 10px 18px;
+      border-radius: 999px;
       border: none;
       cursor: pointer;
-      background: rgba(15, 23, 42, 0.96);
-      color: var(--text-soft);
-      transition: background 0.15s, color 0.15s;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-      overflow: hidden;
-    }
-    .note-item.active {
-      background: var(--accent);
-      color: #020617;
+      background: linear-gradient(120deg, #22c1c3, #4b6cff);
+      color: #fff;
       font-weight: 600;
-    }
-    .note-item:hover:not(.active) {
-      background: rgba(15, 23, 42, 1);
-      color: var(--text-main);
+      font-size: 14px;
     }
 
-    /* TOOLS & STUDENT CENTER */
-    .two-cols {
-      display: grid;
-      gap: 8px;
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    }
-    @media (max-width: 800px) {
-      .two-cols { grid-template-columns: minmax(0, 1fr); }
-    }
-    .pill-tabs {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin-bottom: 6px;
-    }
-    .pill-tab {
-      border-radius: 999px;
-      border: 1px solid rgba(148, 163, 184, 0.45);
-      padding: 4px 9px;
+    footer {
+      text-align: center;
+      padding: 12px;
       font-size: 11px;
-      background: rgba(15, 23, 42, 0.95);
-      color: var(--text-soft);
-      cursor: pointer;
-    }
-    .pill-tab.active {
-      background: var(--accent);
-      color: #020617;
-      font-weight: 600;
-      border-color: transparent;
-    }
-
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb {
-      background: rgba(148, 163, 184, 0.5);
-      border-radius: 999px;
+      opacity: 0.6;
     }
   </style>
 </head>
 <body>
 
-<div id="app" class="app-root">
+<header>
+  <h1>محمود – مساعدك الذكي</h1>
+  <p>شات GPT-4o عبر سيرفر خاص شغال 24/7</p>
+</header>
 
-  <!-- شاشة التسجيل / الدخول -->
-  <div id="auth-view" class="auth-wrapper">
-    <div class="card">
-      <div class="card-header">
-        <div class="logo">A</div>
-        <div>
-          <div class="logo-title">ATLAS</div>
-          <div class="logo-sub">مساحتك الذكية للدراسة والعمل والحياة</div>
-        </div>
-      </div>
+<div class="container">
 
-      <div id="auth-login">
-        <div class="auth-title">أهلاً بعودتك إلى ATLAS</div>
-        <div class="auth-sub">سجّل دخولك لتكمل نوتاتك ومحادثات الذكاء الاصطناعي.</div>
-        <div class="field">
-          <label class="label">الإيميل</label>
-          <input id="login-email" type="email" class="input" placeholder="your@email.com" />
-        </div>
-        <div class="field">
-          <label class="label">كلمة المرور (شكلية فقط)</label>
-          <input id="login-password" type="password" class="input" placeholder="••••••••" />
-        </div>
-        <button class="btn" id="btn-login">تسجيل الدخول</button>
-        <div class="auth-footer">
-          ما عندك حساب؟ 
-          <span class="link" id="go-signup">إنشاء حساب جديد</span>
-        </div>
-      </div>
+  <div class="chat-box">
+    <div class="chat-header">شات الذكاء الاصطناعي</div>
 
-      <div id="auth-signup" class="hidden">
-        <div class="auth-title">أنشئ حسابك على ATLAS</div>
-        <div class="auth-sub">مجاناً – بدون بطاقة أو دفع. فقط إيميلك.</div>
-        <div class="field">
-          <label class="label">الإيميل</label>
-          <input id="signup-email" type="email" class="input" placeholder="your@email.com" />
-        </div>
-        <div class="field">
-          <label class="label">كلمة المرور (للتخزين المحلي فقط)</label>
-          <input id="signup-password" type="password" class="input" placeholder="••••••••" />
-        </div>
-        <button class="btn" id="btn-signup">إنشاء الحساب</button>
-        <div class="auth-footer">
-          عندك حساب مسبقاً؟ 
-          <span class="link" id="go-login">تسجيل الدخول</span>
-        </div>
-      </div>
-
-      <div class="auth-footer" style="margin-top: 8px;">
-        صُنع بحُب بواسطة <span style="color: var(--accent); font-weight: 600;">Mahmoud</span> • نسخة تجريبية
-      </div>
+    <div id="messages" class="messages">
+      <div class="msg ai">أهلاً محمود 👋، كيف أقدر أساعدك اليوم؟</div>
     </div>
-  </div>
 
-  <!-- واجهة التطبيق -->
-  <div id="app-view" class="app-shell hidden">
-    <!-- Sidebar -->
-    <aside class="sidebar">
-      <div class="sidebar-header">
-        <div class="logo">A</div>
-        <div>
-          <div class="logo-title" style="font-size: 15px;">ATLAS</div>
-          <div class="logo-sub">AI Workspace</div>
-        </div>
-      </div>
-      <div class="sidebar-nav">
-        <button class="nav-btn active" data-page-btn="dashboard">
-          <span>لوحة التحكم</span>
-          <span>Overview</span>
-        </button>
-        <button class="nav-btn" data-page-btn="chat">
-          <span>محادثة AI</span>
-          <span>Chat</span>
-        </button>
-        <button class="nav-btn" data-page-btn="notes">
-          <span>النوتات</span>
-          <span>Notes</span>
-        </button>
-        <button class="nav-btn" data-page-btn="tools">
-          <span>الأدوات الذكية</span>
-          <span>Tools</span>
-        </button>
-        <button class="nav-btn" data-page-btn="students">
-          <span>مركز الطلاب</span>
-          <span>Study</span>
-        </button>
-      </div>
-      <div class="sidebar-footer">
-        <div>وضع: <span class="pill">Gemini • Online</span></div>
-        <button id="btn-logout" class="btn btn-danger" style="width: 100%; margin-top: 3px; padding-block: 5px;">
-          تسجيل الخروج
-        </button>
-      </div>
-    </aside>
-
-    <!-- Main -->
-    <div class="main-area">
-      <header class="topbar">
-        <div>
-          <div class="topbar-title">مرحباً بك في ATLAS</div>
-          <div class="topbar-sub">
-            مساحة واحدة للطلاب، الموظفين، وأصحاب الأعمال… كلهم في مكان واحد.
-          </div>
-        </div>
-        <div class="topbar-user">
-          <div id="topbar-email"></div>
-          <div style="margin-top: 2px;">
-            <span class="pill">Gemini • عربي / إنجليزي</span>
-          </div>
-        </div>
-      </header>
-
-      <main class="main-content">
-        <!-- Dashboard -->
-        <section id="page-dashboard">
-          <div class="grid grid-3" style="margin-bottom: 10px;">
-            <div class="card-section">
-              <div class="section-title">جلسات الذكاء الاصطناعي</div>
-              <div class="section-sub">كم مرة استخدمت ATLAS للتفكير والكتابة.</div>
-              <div class="stat-main" id="dash-ai-sessions">0</div>
-              <div class="stat-label">اليوم (محسوب محلياً)</div>
-            </div>
-            <div class="card-section">
-              <div class="section-title">النوتات المخزّنة</div>
-              <div class="section-sub">أفكارك، مهامك، وخططك في مكان واحد.</div>
-              <div class="stat-main" id="dash-notes-count">0</div>
-              <div class="stat-label">إجمالي الملاحظات على جهازك</div>
-            </div>
-            <div class="card-section">
-              <div class="section-title">إمكانات ATLAS</div>
-              <div class="section-sub">طلاب، أعمال، محتوى، برمجة، حياة شخصية.</div>
-              <div class="stat-main">∞</div>
-              <div class="stat-label">عدد المجالات التي يمكن خدمتها</div>
-            </div>
-          </div>
-
-          <div class="grid grid-2">
-            <div class="card-section">
-              <div class="section-title">ابدأ من هنا</div>
-              <div class="section-sub">نماذج جاهزة تساعدك بسرعة.</div>
-              <ul style="font-size: 11px; color: var(--text-main); line-height: 1.5; list-style: none; padding-right: 10px;">
-                <li>• كتابة إيميل رسمي بالعربية أو الإنجليزية.</li>
-                <li>• تلخيص مقالة طويلة أو بحث.</li>
-                <li>• إنشاء خطة دراسة للامتحانات (توجيهي / جامعة).</li>
-                <li>• توليد أفكار لمحتوى TikTok / YouTube.</li>
-                <li>• طلب شرح قاعدة إنجليزية أو حل مسألة رياضيات.</li>
-              </ul>
-            </div>
-            <div class="card-section">
-              <div class="section-title">تدفق العمل المثالي</div>
-              <div class="section-sub">كيف تستغل ATLAS بأفضل صورة.</div>
-              <p style="font-size: 11px; color: var(--text-main); line-height: 1.6;">
-                1. اسأل في <span class="tag">محادثة AI</span> لتحصل على الفكرة أو الحل.<br />
-                2. خزّن النتائج في <span class="tag">النوتات</span> مع تنظيم حسب المواد أو المشاريع.<br />
-                3. استخدم <span class="tag">الأدوات الذكية</span> لإعادة صياغة، تلخيص، أو ترجمة.<br />
-                4. عد إلى <span class="tag">مركز الطلاب</span> لصناعة ملخصات وخطط دراسة خاصة بك.<br />
-              </p>
-            </div>
-          </div>
-        </section>
-
-        <!-- Chat -->
-        <section id="page-chat" class="hidden">
-          <div class="chat-layout card-section">
-            <aside class="chat-modes">
-              <div>
-                <div class="section-title">الأوضاع الذكية</div>
-                <div class="section-sub">
-                  اختر وضع يساعد ATLAS يفهم نيتك أسرع.
-                </div>
-              </div>
-              <div id="chat-modes-container" style="flex:1; overflow-y:auto; padding-right:2px; margin-top:4px;"></div>
-              <div style="font-size:10px; color:var(--text-soft); border-top:1px solid rgba(148,163,184,.35); padding-top:4px; margin-top:4px;">
-                الوضع الحالي:
-                <span id="chat-current-mode" style="color:var(--accent); font-weight:600;">طالب</span>
-              </div>
-            </aside>
-
-            <section class="chat-window">
-              <div class="chat-messages" id="chat-messages"></div>
-              <form class="chat-form" id="chat-form">
-                <textarea
-                  id="chat-input"
-                  class="textarea chat-input"
-                  placeholder="اكتب سؤالك أو طلبك هنا… مثال: اشرح لي قاعدة Passive Voice لتوجيهي 2006، أو اكتب إيميل لشركة بخصوص وظيفة."
-                ></textarea>
-                <button type="submit" class="btn" style="flex-shrink:0; padding-inline:10px;">إرسال</button>
-              </form>
-              <div id="chat-status" style="font-size:10px; color:var(--text-soft); margin-top:2px;"></div>
-            </section>
-          </div>
-        </section>
-
-        <!-- Notes -->
-        <section id="page-notes" class="hidden">
-          <div class="notes-layout card-section">
-            <aside class="notes-list">
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-                <div class="section-title">النوتات</div>
-                <button id="btn-add-note" class="btn" style="padding-block:4px; font-size:11px;">+ نوتة جديدة</button>
-              </div>
-              <div class="section-sub">
-                خزن كل أفكارك، مهامك وخططك هنا. كل شيء يبقى على جهازك.
-              </div>
-              <div id="notes-list" class="notes-scroll"></div>
-              <div style="font-size:10px; color:var(--text-soft); border-top:1px solid rgba(148,163,184,.35); padding-top:4px;">
-                يتم حفظ النوتات تلقائياً في <span class="tag">LocalStorage</span>.
-              </div>
-            </aside>
-
-            <section class="card-section" style="background:rgba(15,23,42,.97);">
-              <input id="note-title" class="input" placeholder="عنوان النوتة (مثال: خطة دراسة الإنجليزي)" style="margin-bottom:5px; font-size:12px; font-weight:600;" />
-              <textarea id="note-content" class="textarea" placeholder="اكتب كل شيء تريد تذكره… أفكار، مهام، روابط، خطط، ملاحظات من محادثة ATLAS."></textarea>
-            </section>
-          </div>
-        </section>
-
-        <!-- Tools -->
-        <section id="page-tools" class="hidden">
-          <div class="card-section">
-            <div class="section-title">الأدوات الذكية</div>
-            <div class="section-sub">
-              أدوات جاهزة لتلخيص، إعادة صياغة، ترجمة، توليد أفكار، وتجهيز Prompt للصور، مع Gemini.
-            </div>
-            <div class="pill-tabs" id="tools-tabs"></div>
-
-            <div class="two-cols">
-              <div>
-                <label class="label">النص أو الفكرة:</label>
-                <textarea id="tools-input" class="textarea" placeholder="ألصق النص هنا أو اكتب طلبك…"></textarea>
-              </div>
-              <div>
-                <label class="label">النتيجة (من Gemini):</label>
-                <textarea id="tools-output" class="textarea" readonly placeholder="النتيجة ستظهر هنا…"></textarea>
-              </div>
-            </div>
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px;">
-              <div style="font-size:10px; color:var(--text-soft);">
-                يتم استخدام نموذج <span class="tag">Gemini 1.5 Flash</span> لتشغيل هذه الأدوات.
-              </div>
-              <button id="btn-tools-run" class="btn" style="padding-inline:14px; font-size:11px;">تشغيل الأداة</button>
-            </div>
-          </div>
-        </section>
-
-        <!-- Student Center -->
-        <section id="page-students" class="hidden">
-          <div class="card-section">
-            <div class="section-title">مركز الطلاب</div>
-            <div class="section-sub">
-              مساعدة طلاب التوجيهي، الجامعة، والمدارس: حل أسئلة، ملخصات، خطط دراسة، وامتحانات تجريبية باستخدام Gemini.
-            </div>
-
-            <div class="pill-tabs" id="student-tabs"></div>
-
-            <div class="two-cols">
-              <div>
-                <label class="label">اكتب سؤالك / الدرس / الوحدة:</label>
-                <textarea id="student-input" class="textarea" placeholder="مثال: لخص لي وحدة Passive Voice لتوجيهي 2006، أو اعمل لي خطة دراسة أسبوعية لمادة الرياضيات."></textarea>
-              </div>
-              <div>
-                <label class="label">الناتج:</label>
-                <textarea id="student-output" class="textarea" readonly placeholder="الإجابة، الملخص، أو خطة الدراسة ستظهر هنا…"></textarea>
-              </div>
-            </div>
-
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px;">
-              <div style="font-size:10px; color:var(--text-soft);">
-                تم إعداد المطالبات لتكون مناسبة لطلاب منطقة مثل الأردن والبلدان العربية.
-              </div>
-              <button id="btn-student-run" class="btn" style="padding-inline:14px; font-size:11px;">إنشاء الناتج</button>
-            </div>
-          </div>
-        </section>
-
-      </main>
+    <div class="input-area">
+      <input id="input" type="text" placeholder="اكتب رسالتك هنا...">
+      <button onclick="sendMessage()">إرسال</button>
     </div>
   </div>
 
 </div>
 
+<footer>© محمود – الذكاء الاصطناعي الخاص بك</footer>
+
 <script>
-  // =============== الاتصال مع الباك إند (Flask) ===============
-  // الباك إند فيه /api/gemini في app.py
-  const GEMINI_PROXY = "/api/gemini";
+  const API_BASE = "https://atlas-ai-hrgs.onrender.com/api/chat";
+  const messagesBox = document.getElementById("messages");
+  const input = document.getElementById("input");
 
-  async function callGemini(promptText) {
-    const res = await fetch(GEMINI_PROXY, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt: promptText })
-    });
-
-    if (!res.ok) {
-      const txt = await res.text();
-      console.error("Gemini proxy error:", txt);
-      throw new Error("خطأ من الباك إند / Gemini: " + res.status);
-    }
-
-    const data = await res.json();
-    const text =
-      data.candidates &&
-      data.candidates[0] &&
-      data.candidates[0].content &&
-      data.candidates[0].content.parts &&
-      data.candidates[0].content.parts[0] &&
-      data.candidates[0].content.parts[0].text;
-
-    return text || "لم أستطع توليد رد مناسب من Gemini.";
+  function addMessage(text, sender) {
+    const div = document.createElement("div");
+    div.className = "msg " + sender;
+    div.textContent = text;
+    messagesBox.appendChild(div);
+    messagesBox.scrollTop = messagesBox.scrollHeight;
   }
 
-  // --------- تخزين بسيط ----------
-  const STORAGE_USER = "atlas_user";
-  const STORAGE_NOTES = "atlas_notes";
-  const STORAGE_AI_SESSIONS = "atlas_ai_sessions";
-
-  function saveUser(email) {
-    localStorage.setItem(STORAGE_USER, JSON.stringify({ email }));
-  }
-  function getUser() {
-    const raw = localStorage.getItem(STORAGE_USER);
-    if (!raw) return null;
-    try { return JSON.parse(raw); } catch { return null; }
-  }
-  function clearUser() {
-    localStorage.removeItem(STORAGE_USER);
-  }
-
-  // --------- Auth Logic ----------
-  const authView = document.getElementById("auth-view");
-  const appView = document.getElementById("app-view");
-
-  const authLogin = document.getElementById("auth-login");
-  const authSignup = document.getElementById("auth-signup");
-  const goSignup = document.getElementById("go-signup");
-  const goLogin = document.getElementById("go-login");
-
-  const loginEmail = document.getElementById("login-email");
-  const loginPassword = document.getElementById("login-password");
-  const btnLogin = document.getElementById("btn-login");
-
-  const signupEmail = document.getElementById("signup-email");
-  const signupPassword = document.getElementById("signup-password");
-  const btnSignup = document.getElementById("btn-signup");
-
-  const topbarEmail = document.getElementById("topbar-email");
-  const btnLogout = document.getElementById("btn-logout");
-
-  goSignup.addEventListener("click", () => {
-    authLogin.classList.add("hidden");
-    authSignup.classList.remove("hidden");
-  });
-  goLogin.addEventListener("click", () => {
-    authSignup.classList.add("hidden");
-    authLogin.classList.remove("hidden");
-  });
-
-  btnLogin.addEventListener("click", () => {
-    const email = loginEmail.value.trim();
-    if (!email) {
-      alert("اكتب الإيميل أولاً.");
-      return;
-    }
-    saveUser(email);
-    showApp();
-  });
-
-  btnSignup.addEventListener("click", () => {
-    const email = signupEmail.value.trim();
-    if (!email) {
-      alert("اكتب الإيميل أولاً.");
-      return;
-    }
-    saveUser(email);
-    showApp();
-  });
-
-  btnLogout.addEventListener("click", () => {
-    if (confirm("هل أنت متأكد أنك تريد تسجيل الخروج؟")) {
-      clearUser();
-      location.reload();
-    }
-  });
-
-  function showApp() {
-    const user = getUser();
-    if (!user) return;
-    authView.classList.add("hidden");
-    appView.classList.remove("hidden");
-    topbarEmail.textContent = user.email || "";
-    updateDashboardStats();
-    loadNotes();
-    initChat();
-  }
-
-  // --------- Navigation ----------
-  const pageIds = ["dashboard", "chat", "notes", "tools", "students"];
-  const navButtons = document.querySelectorAll("[data-page-btn]");
-
-  navButtons.forEach(btn => {
-    btn.addEventListener("click", () => {
-      const target = btn.getAttribute("data-page-btn");
-      pageIds.forEach(id => {
-        document.getElementById("page-" + id).classList.toggle("hidden", id !== target);
-      });
-      navButtons.forEach(b => b.classList.remove("active"));
-      btn.classList.add("active");
-    });
-  });
-
-  // --------- Dashboard stats ----------
-  const dashAi = document.getElementById("dash-ai-sessions");
-  const dashNotes = document.getElementById("dash-notes-count");
-
-  function updateDashboardStats() {
-    const ai = Number(localStorage.getItem(STORAGE_AI_SESSIONS) || "0");
-    dashAi.textContent = ai;
-
-    const raw = localStorage.getItem(STORAGE_NOTES);
-    let list = [];
-    if (raw) {
-      try { list = JSON.parse(raw); } catch {}
-    }
-    dashNotes.textContent = list.length;
-  }
-
-  // --------- Chat ----------
-  const chatModes = [
-    "طالب",
-    "موظف",
-    "كاتب محتوى",
-    "مبرمج",
-    "مترجم",
-    "باحث",
-    "ماليات / تداول"
-  ];
-  let chatCurrentMode = "طالب";
-  let chatMessagesArr = [
-    {
-      role: "assistant",
-      content: "مرحباً بك في ATLAS Chat 👋\nأنا متصل حالياً بنموذج Gemini عبر الباك إند.\nاختر وضعك (طالب، موظف، صاحب محتوى...) ثم اسأل ما تريد بالعربي أو الإنجليزي."
-    }
-  ];
-  const chatModesContainer = document.getElementById("chat-modes-container");
-  const chatCurrentModeLabel = document.getElementById("chat-current-mode");
-  const chatMessagesDiv = document.getElementById("chat-messages");
-  const chatForm = document.getElementById("chat-form");
-  const chatInput = document.getElementById("chat-input");
-  const chatStatus = document.getElementById("chat-status");
-
-  function initChat() {
-    chatModesContainer.innerHTML = "";
-    chatModes.forEach(mode => {
-      const btn = document.createElement("button");
-      btn.textContent = mode;
-      btn.className = "mode-btn" + (mode === chatCurrentMode ? " active" : "");
-      btn.addEventListener("click", () => {
-        chatCurrentMode = mode;
-        chatCurrentModeLabel.textContent = mode;
-        [...chatModesContainer.children].forEach(b => b.classList.remove("active"));
-        btn.classList.add("active");
-      });
-      chatModesContainer.appendChild(btn);
-    });
-    renderChatMessages();
-  }
-
-  function renderChatMessages() {
-    chatMessagesDiv.innerHTML = "";
-    chatMessagesArr.forEach(msg => {
-      const div = document.createElement("div");
-      div.className = "bubble " + (msg.role === "user" ? "user" : "assistant");
-      div.textContent = msg.content;
-      chatMessagesDiv.appendChild(div);
-    });
-    chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
-  }
-
-  chatForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const text = chatInput.value.trim();
+  async function sendMessage() {
+    const text = input.value.trim();
     if (!text) return;
-    chatMessagesArr.push({ role: "user", content: text });
-    chatInput.value = "";
-    renderChatMessages();
-    chatStatus.textContent = "ATLAS (Gemini) يفكر…";
 
-    const current = Number(localStorage.getItem(STORAGE_AI_SESSIONS) || "0");
-    localStorage.setItem(STORAGE_AI_SESSIONS, String(current + 1));
-    updateDashboardStats();
+    addMessage(text, "user");
+    input.value = "";
 
     try {
-      const prompt =
-        "أنت مساعد ذكاء إصطناعي يعمل داخل منصة اسمها ATLAS. " +
-        "تكلّم بلغة المستخدم (عادة العربية الفصحى المبسطة، أو الإنجليزية لو كتب بها). " +
-        "وضع المستخدم الحالي هو: " + chatCurrentMode + ".\n\n" +
-        "ساعده بأفضل شكل ممكن، مع تنظيم الإجابة بنقاط عند الحاجة.\n\n" +
-        "نص المستخدم:\n" + text;
+      const res = await fetch(API_BASE, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: text })
+      });
 
-      const answer = await callGemini(prompt);
-      chatMessagesArr.push({ role: "assistant", content: answer });
+      const data = await res.json();
+      addMessage(data.reply, "ai");
+
     } catch (err) {
+      addMessage("⚠ حدث خطأ أثناء الاتصال بالسيرفر.", "ai");
       console.error(err);
-      chatMessagesArr.push({
-        role: "assistant",
-        content: "حدث خطأ أثناء الاتصال بـ Gemini. تأكد من أن السيرفر شغال ومفتاح GEMINI_API_KEY مضبوط هناك."
-      });
-    } finally {
-      renderChatMessages();
-      chatStatus.textContent = "";
     }
-  });
-
-  // --------- Notes ----------
-  const notesListDiv = document.getElementById("notes-list");
-  const noteTitleInput = document.getElementById("note-title");
-  const noteContentTextarea = document.getElementById("note-content");
-  const btnAddNote = document.getElementById("btn-add-note");
-  let notes = [];
-  let activeNoteId = null;
-
-  function loadNotes() {
-    const raw = localStorage.getItem(STORAGE_NOTES);
-    if (raw) {
-      try { notes = JSON.parse(raw); } catch { notes = []; }
-    } else {
-      notes = [];
-    }
-    if (notes.length === 0) {
-      const first = {
-        id: Date.now().toString(),
-        title: "أول نوتة لك في ATLAS",
-        content: "اكتب هنا خطتك، أفكارك، مهامك، أو ملاحظات من محادثة الذكاء الاصطناعي."
-      };
-      notes.push(first);
-      activeNoteId = first.id;
-      saveNotes();
-    } else if (!activeNoteId) {
-      activeNoteId = notes[0].id;
-    }
-    renderNotesList();
-    renderActiveNote();
-    updateDashboardStats();
   }
 
-  function saveNotes() {
-    localStorage.setItem(STORAGE_NOTES, JSON.stringify(notes));
-    updateDashboardStats();
-  }
-
-  function renderNotesList() {
-    notesListDiv.innerHTML = "";
-    if (notes.length === 0) {
-      const p = document.createElement("p");
-      p.style.fontSize = "10px";
-      p.style.color = "var(--text-soft)";
-      p.textContent = "لا توجد نوتات بعد. أنشئ نوتة جديدة.";
-      notesListDiv.appendChild(p);
-      return;
-    }
-    notes.forEach(note => {
-      const btn = document.createElement("button");
-      btn.className = "note-item" + (note.id === activeNoteId ? " active" : "");
-      btn.textContent = note.title || "نوتة بدون عنوان";
-      btn.addEventListener("click", () => {
-        activeNoteId = note.id;
-        renderNotesList();
-        renderActiveNote();
-      });
-      notesListDiv.appendChild(btn);
-    });
-  }
-
-  function renderActiveNote() {
-    const note = notes.find(n => n.id === activeNoteId);
-    if (!note) {
-      noteTitleInput.value = "";
-      noteContentTextarea.value = "";
-      return;
-    }
-    noteTitleInput.value = note.title;
-    noteContentTextarea.value = note.content;
-  }
-
-  btnAddNote.addEventListener("click", () => {
-    const newNote = {
-      id: Date.now().toString(),
-      title: "نوتة جديدة",
-      content: ""
-    };
-    notes.unshift(newNote);
-    activeNoteId = newNote.id;
-    saveNotes();
-    renderNotesList();
-    renderActiveNote();
-  });
-
-  noteTitleInput.addEventListener("input", () => {
-    const note = notes.find(n => n.id === activeNoteId);
-    if (!note) return;
-    note.title = noteTitleInput.value;
-    saveNotes();
-    renderNotesList();
-  });
-
-  noteContentTextarea.addEventListener("input", () => {
-    const note = notes.find(n => n.id === activeNoteId);
-    if (!note) return;
-    note.content = noteContentTextarea.value;
-    saveNotes();
-  });
-
-  // --------- Tools ----------
-  const toolsTabsDiv = document.getElementById("tools-tabs");
-  const toolsInput = document.getElementById("tools-input");
-  const toolsOutput = document.getElementById("tools-output");
-  const btnToolsRun = document.getElementById("btn-tools-run");
-
-  const toolsList = [
-    { id: "summary", label: "تلخيص النصوص" },
-    { id: "rephrase", label: "إعادة الصياغة" },
-    { id: "translate", label: "الترجمة" },
-    { id: "ideas", label: "توليد الأفكار" },
-    { id: "image", label: "Prompt للصور" }
-  ];
-  let activeToolId = "summary";
-
-  function initTools() {
-    toolsTabsDiv.innerHTML = "";
-    toolsList.forEach(tool => {
-      const btn = document.createElement("button");
-      btn.className = "pill-tab" + (tool.id === activeToolId ? " active" : "");
-      btn.textContent = tool.label;
-      btn.addEventListener("click", () => {
-        activeToolId = tool.id;
-        [...toolsTabsDiv.children].forEach(b => b.classList.remove("active"));
-        btn.classList.add("active");
-      });
-      toolsTabsDiv.appendChild(btn);
-    });
-  }
-
-  btnToolsRun.addEventListener("click", async () => {
-    const input = toolsInput.value.trim();
-    if (!input) {
-      alert("ألصق أو اكتب نصاً لتجرب الأداة.");
-      return;
-    }
-    toolsOutput.value = "ATLAS (Gemini) يعمل الآن…";
-    try {
-      let instruction = "";
-      switch (activeToolId) {
-        case "summary":
-          instruction =
-            "لخّص النص التالي بالعربية الفصحى المبسطة في نقاط واضحة، بدون حذف الأفكار المهمة:";
-          break;
-        case "rephrase":
-          instruction =
-            "أعد صياغة النص التالي بأسلوب أفضل وأكثر وضوحاً، مع الحفاظ على المعنى:";
-          break;
-        case "translate":
-          instruction =
-            "ترجم النص التالي ترجمة دقيقة، إذا هو عربي فترجمه إلى الإنجليزية، وإذا إنجليزي فترجمه إلى العربية:";
-          break;
-        case "ideas":
-          instruction =
-            "قدّم أفكاراً عملية (قوائم بنقاط) بناءً على الطلب التالي. ركّز على أمثلة واقعية قابلة للتطبيق:";
-          break;
-        case "image":
-          instruction =
-            "اكتب لي Prompt احترافي لصورة يمكن استخدامه مع مولد صور ذكاء اصطناعي (بالإنجليزية) بناءً على الوصف التالي:";
-          break;
-      }
-      const prompt = instruction + "\n\n" + input;
-      const result = await callGemini(prompt);
-      toolsOutput.value = result;
-    } catch (err) {
-      console.error(err);
-      toolsOutput.value = "حدث خطأ أثناء الاتصال بـ Gemini. تأكد من أن السيرفر شغال ومفتاح GEMINI_API_KEY مضبوط هناك.";
-    }
-  });
-
-  // --------- Student Center ----------
-  const studentTabsDiv = document.getElementById("student-tabs");
-  const studentInput = document.getElementById("student-input");
-  const studentOutput = document.getElementById("student-output");
-  const btnStudentRun = document.getElementById("btn-student-run");
-
-  const studentTabs = [
-    { id: "qna", label: "حل أسئلة / شرح" },
-    { id: "summaries", label: "ملخصات" },
-    { id: "plans", label: "خطط دراسة" },
-    { id: "exams", label: "امتحانات تجريبية" }
-  ];
-  let activeStudentTab = "qna";
-
-  function initStudentCenter() {
-    studentTabsDiv.innerHTML = "";
-    studentTabs.forEach(tab => {
-      const btn = document.createElement("button");
-      btn.className = "pill-tab" + (tab.id === activeStudentTab ? " active" : "");
-      btn.textContent = tab.label;
-      btn.addEventListener("click", () => {
-        activeStudentTab = tab.id;
-        [...studentTabsDiv.children].forEach(b => b.classList.remove("active"));
-        btn.classList.add("active");
-      });
-      studentTabsDiv.appendChild(btn);
-    });
-  }
-
-  btnStudentRun.addEventListener("click", async () => {
-    const text = studentInput.value.trim();
-    if (!text) {
-      alert("اكتب سؤال أو درس أو وحدة لتوليد الناتج.");
-      return;
-    }
-    studentOutput.value = "ATLAS (Gemini) يحضّر لك الإجابة…";
-    try {
-      let instruction = "";
-      switch (activeStudentTab) {
-        case "qna":
-          instruction =
-            "أنت معلّم لطيف يشرح للطالب بالعربية الفصحى المبسطة. اشرح أو حل السؤال التالي خطوة بخطوة وبشكل سهل جداً:";
-          break;
-        case "summaries":
-          instruction =
-            "لخّص الوحدة / الدرس التالي لطلاب مرحلة مثل التوجيهي أو الجامعة، مع إبراز القواعد أو القوانين المهمة في نقاط:";
-          break;
-        case "plans":
-          instruction =
-            "أنشئ خطة دراسة أسبوعية أو شهرية بناءً على طلب الطالب التالي، مع تقسيم الأيام والمواد ووقت المراجعة:";
-          break;
-        case "exams":
-          instruction =
-            "أنشئ نموذج امتحان تدريبي (أسئلة اختيار من متعدد، صح/خطأ، وأسئلة مقالية قصيرة) بناءً على الموضوع التالي:";
-          break;
-      }
-      const prompt = instruction + "\n\n" + text;
-      const result = await callGemini(prompt);
-      studentOutput.value = result;
-    } catch (err) {
-      console.error(err);
-      studentOutput.value = "حدث خطأ أثناء الاتصال بـ Gemini. تأكد من أن السيرفر شغال ومفتاح GEMINI_API_KEY مضبوط هناك.";
-    }
-  });
-
-  // --------- Initial load ----------
-  window.addEventListener("load", () => {
-    const user = getUser();
-    initTools();
-    initStudentCenter();
-    if (user) {
-      showApp();
-    } else {
-      authView.classList.remove("hidden");
-    }
+  input.addEventListener("keydown", e => {
+    if (e.key === "Enter") sendMessage();
   });
 </script>
 
