@@ -138,10 +138,27 @@
       padding-top: 6px;
     }
 
+    .saved-title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+      gap: 6px;
+    }
+
     .saved-title {
       font-size: 12px;
       opacity: 0.8;
-      margin-bottom: 4px;
+    }
+
+    .saved-title-row select {
+      background: #020617;
+      color: #e5e5e5;
+      border-radius: 999px;
+      border: 1px solid #27272f;
+      font-size: 11px;
+      padding: 2px 6px;
+      outline: none;
     }
 
     .saved-item {
@@ -156,14 +173,70 @@
       font-size: 11px;
       cursor: pointer;
       outline: none;
+    }
+
+    .saved-item-main {
       display: flex;
       justify-content: space-between;
+      align-items: center;
       gap: 6px;
     }
 
-    .saved-item span {
+    .saved-item span.date {
       font-size: 10px;
       opacity: 0.7;
+    }
+
+    .saved-icon-btn {
+      font-size: 10px;
+      padding: 2px 5px;
+      border-radius: 999px;
+      border: 1px solid #27272f;
+      background: #0b0b11;
+      color: #e5e5e5;
+      cursor: pointer;
+      margin-left: 4px;
+    }
+
+    .saved-empty {
+      font-size: 11px;
+      opacity: 0.6;
+    }
+
+    /* Pomodoro */
+
+    .pomodoro {
+      margin-top: 10px;
+      border-top: 1px solid #18181b;
+      padding-top: 8px;
+    }
+
+    .pomodoro-title {
+      font-size: 12px;
+      opacity: 0.85;
+      margin-bottom: 4px;
+    }
+
+    #pomodoroTime {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .pomodoro-buttons {
+      display: flex;
+      gap: 6px;
+    }
+
+    .pomodoro-buttons button {
+      flex: 1;
+      font-size: 11px;
+      padding: 4px 0;
+      border-radius: 999px;
+      border: 1px solid #27272f;
+      background: #020617;
+      color: #e5e5e5;
+      cursor: pointer;
     }
 
     /* ====== CHAT AREA ====== */
@@ -200,7 +273,9 @@
 
     .chat-header-actions {
       display: flex;
-      gap: 8px;
+      flex-wrap: wrap;
+      gap: 6px;
+      justify-content: flex-end;
     }
 
     .mini-btn {
@@ -211,6 +286,12 @@
       background: #020617;
       color: #e5e5e5;
       cursor: pointer;
+    }
+
+    .mode-btn.active {
+      background: #22c1c3;
+      border-color: #22c1c3;
+      color: #000;
     }
 
     .messages {
@@ -264,6 +345,7 @@
       align-items: center;
       gap: 8px;
       font-size: 11px;
+      flex-wrap: wrap;
     }
 
     .export-bar span {
@@ -434,7 +516,7 @@
 
 <header>
   <h1>محمود – مساعدك الذكي</h1>
-  <p>شات Gemini 2.5 Flash عبر سيرفر خاص يعمل 24/7</p>
+  <p>مساعد طالب عربي: نوتات + مهام + وقت + صحة + PDF + صور</p>
 </header>
 
 <main class="layout">
@@ -444,6 +526,18 @@
     <div>
       <div class="sidebar-title">الأدوات الذكية</div>
       <div class="sidebar-sub">اختر أداة وسيقوم المساعد بإنجاز المهمة تلقائياً.</div>
+
+      <!-- Presets -->
+      <div class="tool-group-title">أوضاع جاهزة (Presets)</div>
+      <button class="tool-btn" onclick="presetLectureImage()">
+        لخّص صورة محاضرة <span>Lecture → Note</span>
+      </button>
+      <button class="tool-btn" onclick="presetExamNote()">
+        جهّزلي نوتة للامتحان <span>Q&A Note</span>
+      </button>
+      <button class="tool-btn" onclick="downloadConversationPdf()">
+        حوّل المحادثة لملف PDF <span>Export chat</span>
+      </button>
 
       <div class="tool-group-title">أدوات النوتة والكتابة</div>
       <button class="tool-btn" onclick="openToolModal('summary')">
@@ -468,6 +562,17 @@
         سؤال AI عن محتوى النوتة <span>Ask note</span>
       </button>
 
+      <div class="tool-group-title">قوالب جاهزة للطلاب</div>
+      <button class="tool-btn" onclick="templateSubjectSummary()">
+        قالب ملخص مادة <span>Subject summary</span>
+      </button>
+      <button class="tool-btn" onclick="templateExamPlan()">
+        خطة دراسة لامتحان أسبوع <span>Exam plan</span>
+      </button>
+      <button class="tool-btn" onclick="templateBookSummary()">
+        تلخيص كتاب / باب كامل <span>Book / chapter</span>
+      </button>
+
       <div class="tool-group-title" style="margin-top: 12px;">نمط الحياة والإنتاجية</div>
       <button class="tool-btn" onclick="openToolModal('planner')">
         Planner AI للمهام <span>Tasks plan</span>
@@ -475,8 +580,8 @@
       <button class="tool-btn" onclick="openToolModal('health')">
         Health AI للروتين اليومي <span>Health</span>
       </button>
-      <button class="tool-btn" onclick="openToolModal('pomodoro')">
-        Pomodoro AI لإدارة الوقت <span>Focus</span>
+      <button class="tool-btn" onclick="openToolModal('pomodoro_tool')">
+        Pomodoro AI لإدارة الوقت <span>Focus text</span>
       </button>
       <button class="tool-btn" onclick="openToolModal('pdf')">
         تحليل ملف PDF بالنص <span>PDF text</span>
@@ -485,8 +590,27 @@
 
     <!-- Saved conversations -->
     <div class="saved-list">
-      <div class="saved-title">محادثات محفوظة</div>
+      <div class="saved-title-row">
+        <span class="saved-title">محادثات محفوظة</span>
+        <select id="savedFilter" onchange="changeFilter(this.value)">
+          <option value="all">الكل</option>
+          <option value="notes">نوتات</option>
+          <option value="plans">خطط</option>
+          <option value="images">صور</option>
+        </select>
+      </div>
       <div id="savedConversations"></div>
+    </div>
+
+    <!-- Pomodoro Timer -->
+    <div class="pomodoro">
+      <div class="pomodoro-title">مؤقت التركيز (Pomodoro)</div>
+      <div id="pomodoroTime">25:00</div>
+      <div class="pomodoro-buttons">
+        <button onclick="startPomodoro()">بدء</button>
+        <button onclick="pausePomodoro()">إيقاف</button>
+        <button onclick="resetPomodoro()">إعادة</button>
+      </div>
     </div>
   </aside>
 
@@ -495,11 +619,16 @@
     <div class="chat-header">
       <div>
         <div class="chat-header-title">شات الذكاء الاصطناعي</div>
-        <div class="chat-header-sub">محمود AI – متصل بسيرفر atlas-ai</div>
+        <div class="chat-header-sub">جاهز نخلي شغلك أسهل اليوم؟ 😎</div>
       </div>
       <div class="chat-header-actions">
         <button class="mini-btn" onclick="saveCurrentConversation()">حفظ المحادثة</button>
         <button class="mini-btn" onclick="clearConversation()">محادثة جديدة</button>
+
+        <div>
+          <button id="modeTurbo" class="mini-btn mode-btn active" onclick="setMode('turbo')">Turbo</button>
+          <button id="modeDeep" class="mini-btn mode-btn" onclick="setMode('deep')">دقيق</button>
+        </div>
       </div>
     </div>
 
@@ -514,6 +643,7 @@
       <button id="btnTxt" class="export-btn" onclick="downloadAsTxt()" disabled>TXT</button>
       <button id="btnDoc" class="export-btn" onclick="downloadAsDoc()" disabled>Word</button>
       <button id="btnPdf" class="export-btn" onclick="downloadAsPdf()" disabled>PDF</button>
+      <button id="btnTodo" class="export-btn" onclick="convertReplyToTodo()" disabled>To-Do</button>
     </div>
 
     <div class="input-area">
@@ -548,7 +678,6 @@
 
 <script>
   // ===== إعدادات عامة =====
-  // عدّل الرابط إذا تغيّر اسم السيرفر في Render
   const API_CHAT  = "https://atlas-ai-hrgs.onrender.com/api/chat";
   const API_IMAGE = "https://atlas-ai-hrgs.onrender.com/api/image_chat";
 
@@ -562,10 +691,54 @@
 
   document.getElementById("year").textContent = new Date().getFullYear();
 
-  let lastAiReply = "";
-  let currentConversation = [];
-  let savedConversations  = [];
+  let lastAiReply          = "";
+  let currentConversation  = [];
+  let savedConversations   = [];
+  let currentFilter        = "all";
+  let currentMode          = "turbo";
+  let imagePresetPrompt    = "";
 
+  // Pomodoro
+  let pomodoroDuration  = 25 * 60;
+  let pomodoroRemaining = pomodoroDuration;
+  let pomodoroTimer     = null;
+
+  function updatePomodoroDisplay() {
+    const m = Math.floor(pomodoroRemaining / 60).toString().padStart(2,"0");
+    const s = (pomodoroRemaining % 60).toString().padStart(2,"0");
+    document.getElementById("pomodoroTime").textContent = `${m}:${s}`;
+  }
+
+  function startPomodoro() {
+    if (pomodoroTimer) return;
+    pomodoroTimer = setInterval(() => {
+      if (pomodoroRemaining > 0) {
+        pomodoroRemaining--;
+        updatePomodoroDisplay();
+      } else {
+        clearInterval(pomodoroTimer);
+        pomodoroTimer = null;
+        alert("انتهت جلسة التركيز! خذ استراحة قصيرة ☕");
+      }
+    }, 1000);
+  }
+
+  function pausePomodoro() {
+    if (pomodoroTimer) {
+      clearInterval(pomodoroTimer);
+      pomodoroTimer = null;
+    }
+  }
+
+  function resetPomodoro() {
+    pausePomodoro();
+    pomodoroRemaining = pomodoroDuration;
+    updatePomodoroDisplay();
+  }
+
+  updatePomodoroDisplay();
+
+  // ===== رسائل الشات =====
   function addMessage(text, sender, addToMemory = true) {
     const div = document.createElement("div");
     div.className = "msg " + sender;
@@ -581,7 +754,6 @@
       });
     }
 
-    // لو الرد من الـ AI نخزّنه للتصدير
     if (sender === "ai") {
       lastAiReply = text;
       updateExportButtons();
@@ -612,7 +784,7 @@
       const res = await fetch(API_CHAT, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: messageText }),
+        body: JSON.stringify({ message: messageText, mode: currentMode }),
       });
 
       const data = await res.json();
@@ -641,9 +813,9 @@
   });
 
   // رسالة ترحيب أول مرة
-  addMessage("أهلاً محمود 👋\nأنا مساعدك الذكي. اكتب سؤالك هنا أو اختر أداة من القائمة على اليمين.", "ai", true);
+  addMessage("أهلاً محمود 👋\nجاهز نخلي شغلك أسهل اليوم؟ 😎\nاكتب سؤالك أو اختر أداة من القائمة على اليمين.", "ai", true);
 
-  // ===== حفظ المحادثات في localStorage =====
+  // ===== حفظ المحادثات =====
   function loadSavedConversations() {
     try {
       const raw = localStorage.getItem("mahmoud_ai_conversations") || "[]";
@@ -654,26 +826,49 @@
     renderSavedConversations();
   }
 
+  function guessConversationCategory(convMessages) {
+    const all = convMessages.map((m) => m.text).join(" ").toLowerCase();
+    if (all.includes("🔍") || all.includes("صورة") || all.includes("image")) return "images";
+    if (all.includes("planner ai") || all.includes("خطة دراسة") || all.includes("pomodoro")) return "plans";
+    return "notes";
+  }
+
   function renderSavedConversations() {
     savedListEl.innerHTML = "";
-    if (!savedConversations.length) {
+    const filtered = savedConversations.filter((c) =>
+      currentFilter === "all" ? true : c.category === currentFilter
+    );
+
+    if (!filtered.length) {
       const span = document.createElement("span");
-      span.style.fontSize = "11px";
-      span.style.opacity   = "0.6";
-      span.textContent     = "لا توجد محادثات محفوظة بعد.";
+      span.className = "saved-empty";
+      span.textContent = "لا توجد محادثات محفوظة بعد.";
       savedListEl.appendChild(span);
       return;
     }
-    savedConversations
+
+    filtered
       .slice()
       .reverse()
       .forEach((conv) => {
-        const btn = document.createElement("button");
+        const btn = document.createElement("div");
         btn.className = "saved-item";
-        btn.onclick   = () => loadConversation(conv.id);
-        const title   = conv.title || "محادثة بدون عنوان";
-        const date    = new Date(conv.createdAt).toLocaleString("ar-JO");
-        btn.innerHTML = `<div>${title}</div><span>${date}</span>`;
+        btn.onclick = () => loadConversation(conv.id);
+
+        const title = conv.title || "محادثة بدون عنوان";
+        const date  = new Date(conv.createdAt).toLocaleString("ar-JO");
+
+        btn.innerHTML = `
+          <div class="saved-item-main">
+            <div>${title}</div>
+            <div>
+              <button class="saved-icon-btn" onclick="renameConversation(${conv.id}, event)">✏️</button>
+              <button class="saved-icon-btn" onclick="deleteConversation(${conv.id}, event)">🗑</button>
+            </div>
+          </div>
+          <span class="date">${date}</span>
+        `;
+
         savedListEl.appendChild(btn);
       });
   }
@@ -687,10 +882,13 @@
     const firstUserMsg = currentConversation.find((m) => m.sender === "user");
     const title = firstUserMsg ? firstUserMsg.text.slice(0, 24) + "..." : "محادثة محفوظة";
 
+    const category = guessConversationCategory(currentConversation);
+
     const conv = {
       id: Date.now(),
       title,
       createdAt: Date.now(),
+      category,
       messages: currentConversation,
     };
 
@@ -704,13 +902,13 @@
     const conv = savedConversations.find((c) => c.id === id);
     if (!conv) return;
 
-    messagesEl.innerHTML   = "";
-    currentConversation    = conv.messages.slice();
-    lastAiReply            = "";
+    messagesEl.innerHTML  = "";
+    currentConversation   = conv.messages.slice();
+    lastAiReply           = "";
     currentConversation.forEach((m) => {
       addMessage(m.text, m.sender, false);
       if (m.sender === "ai") {
-        lastAiReply = m.text; // آخر رد من AI
+        lastAiReply = m.text;
       }
     });
     updateExportButtons();
@@ -724,10 +922,41 @@
     updateExportButtons();
   }
 
+  function renameConversation(id, ev) {
+    ev.stopPropagation();
+    const conv = savedConversations.find((c) => c.id === id);
+    if (!conv) return;
+    const newTitle = prompt("اكتب اسماً جديداً للمحادثة:", conv.title || "");
+    if (!newTitle) return;
+    conv.title = newTitle;
+    localStorage.setItem("mahmoud_ai_conversations", JSON.stringify(savedConversations));
+    renderSavedConversations();
+  }
+
+  function deleteConversation(id, ev) {
+    ev.stopPropagation();
+    if (!confirm("متأكد إنك بدك تحذف هاي المحادثة؟")) return;
+    savedConversations = savedConversations.filter((c) => c.id !== id);
+    localStorage.setItem("mahmoud_ai_conversations", JSON.stringify(savedConversations));
+    renderSavedConversations();
+  }
+
+  function changeFilter(val) {
+    currentFilter = val;
+    renderSavedConversations();
+  }
+
   loadSavedConversations();
   updateExportButtons();
 
-  // ===== أدوات السايدبار =====
+  // ===== أوضاع الرد (Turbo / دقيق) =====
+  function setMode(mode) {
+    currentMode = mode;
+    document.getElementById("modeTurbo").classList.toggle("active", mode === "turbo");
+    document.getElementById("modeDeep").classList.toggle("active", mode === "deep");
+  }
+
+  // ===== أدوات النوتة (Sidebar Tools) =====
   let currentTool = null;
 
   const TOOL_CONFIG = {
@@ -765,11 +994,11 @@
     },
     health: {
       title: "Health AI للروتين اليومي",
-      desc: "اكتب تفاصيل نمط حياتك الحالي، وسأقترح عليك روتين صحي بسيط.",
+      desc: "اكتب تفاصيل نمط حياتك الحالي، وسأقترح عليك روتيناً صحياً بسيطاً.",
     },
-    pomodoro: {
+    pomodoro_tool: {
       title: "Pomodoro AI",
-      desc: "اكتب ما تريد إنجازه، وسأقسمه لك إلى جلسات تركيز (Pomodoro).",
+      desc: "اكتب ما تريد إنجازه، وسأقسّمه لك إلى جلسات تركيز بنظام Pomodoro.",
     },
     pdf: {
       title: "تحليل ملف PDF بالنص",
@@ -785,9 +1014,9 @@
   function openToolModal(toolKey) {
     currentTool = toolKey;
     const cfg   = TOOL_CONFIG[toolKey];
-    modalTitle.textContent    = cfg.title;
-    modalDesc.textContent     = cfg.desc;
-    modalTextarea.value       = "";
+    modalTitle.textContent   = cfg.title;
+    modalDesc.textContent    = cfg.desc;
+    modalTextarea.value      = "";
     modalBackdrop.classList.add("visible");
   }
 
@@ -816,7 +1045,7 @@
         return `أنت Planner AI لمحمود. أنشئ خطة مهام منظمة استناداً إلى هذه المعلومات:\n\n${text}`;
       case "health":
         return `أنت Health AI لمحمود. اقترح روتيناً صحياً يومياً مبسطاً بناءً على هذه التفاصيل:\n\n${text}`;
-      case "pomodoro":
+      case "pomodoro_tool":
         return `قسّم هذا العمل إلى جلسات تركيز بنظام Pomodoro (25 دقيقة تركيز + 5 راحة):\n\n${text}`;
       case "pdf":
         return `هذا نص مأخوذ من ملف PDF أو وصف محتواه. حلّله واستخرج أهم الأفكار مع ملخص:\n\n${text}`;
@@ -838,6 +1067,49 @@
     await callTextApi(toolPrompt);
   }
 
+  // ===== Presets و Templates =====
+  function presetLectureImage() {
+    imagePresetPrompt = "لخّص محتوى هذه الصورة كأنها سلايدات محاضرة، واستخرج أهم الأفكار في شكل نوتة منظمة للامتحان.";
+    triggerImagePicker();
+  }
+
+  function presetExamNote() {
+    inputEl.value = "عندي نوتة للامتحان. لخصها لي، ثم جهّز أسئلة وأجوبة عليها (سؤال وجواب) بطريقة تساعدني أراجع قبل الامتحان.";
+    inputEl.focus();
+  }
+
+  function templateSubjectSummary() {
+    inputEl.value =
+      "أريد منك أن تصنع لي ملخص مادة بالعربية:\n" +
+      "اسم المادة:\n" +
+      "الدكتور:\n" +
+      "المواضيع الرئيسية:\n" +
+      "النص / النوتة:\n\n" +
+      "رجاءً لخص المادة بعناوين فرعية، ونقاط رئيسية، وأمثلة إن وجدت.";
+    inputEl.focus();
+  }
+
+  function templateExamPlan() {
+    inputEl.value =
+      "أريد خطة دراسة لامتحان خلال أسبوع واحد:\n" +
+      "اسم المادة:\n" +
+      "تاريخ الامتحان:\n" +
+      "الأيام المتاحة:\n" +
+      "عدد الساعات المتاحة يومياً:\n\n" +
+      "قسّم لي الدراسة على الأيام بطريقة مريحة، وحدد ماذا أدرس كل يوم.";
+    inputEl.focus();
+  }
+
+  function templateBookSummary() {
+    inputEl.value =
+      "أريد تلخيص كتاب / باب كامل:\n" +
+      "اسم الكتاب أو الباب:\n" +
+      "المؤلف (إن وجد):\n" +
+      "النص / النوتة أو أهم الفقرات:\n\n" +
+      "رجاءً لخصه لي بعناوين رئيسية، عناوين فرعية، ونقاط مهمة، وكأنها نوتة جاهزة للمراجعة.";
+    inputEl.focus();
+  }
+
   // ===== إرسال الصور =====
   function triggerImagePicker() {
     imageInput.click();
@@ -852,13 +1124,20 @@
     reader.onload = async () => {
       const base64Data = reader.result.split(",")[1];
 
-      // نأخذ النص المكتوب (لو موجود) كتعليمات إضافية
       const text = inputEl.value.trim();
       inputEl.value = "";
 
-      addMessage(text ? `🔍 تحليل صورة مع النص:\n${text}` : "🔍 إرسال صورة للتحليل...", "user");
+      const usedPrompt = imagePresetPrompt || text;
+      imagePresetPrompt = "";
 
-      await callImageApi(base64Data, text);
+      addMessage(
+        usedPrompt
+          ? `🔍 تحليل صورة مع التعليمات:\n${usedPrompt}`
+          : "🔍 إرسال صورة للتحليل...",
+        "user"
+      );
+
+      await callImageApi(base64Data, usedPrompt);
       imageHint.textContent = "";
       imageInput.value      = "";
     };
@@ -875,6 +1154,7 @@
         body: JSON.stringify({
           message: messageText || "",
           image: imageBase64,
+          mode: currentMode,
         }),
       });
 
@@ -895,10 +1175,10 @@
     }
   }
 
-  // ===== أزرار التصدير =====
+  // ===== أزرار التصدير (آخر رد) =====
   function updateExportButtons() {
     const has = !!(lastAiReply && lastAiReply.trim());
-    ["btnTxt", "btnDoc", "btnPdf"].forEach((id) => {
+    ["btnTxt", "btnDoc", "btnPdf", "btnTodo"].forEach((id) => {
       const el = document.getElementById(id);
       if (!el) return;
       if (has) {
@@ -950,6 +1230,42 @@
     const lines = doc.splitTextToSize(lastAiReply, maxWidth);
     doc.text(lines, margin, margin);
     doc.save("mahmoud_ai_note.pdf");
+  }
+
+  async function convertReplyToTodo() {
+    if (!lastAiReply || !lastAiReply.trim()) return;
+    const prompt = `حوّل المحتوى التالي إلى قائمة مهام (To-Do list) بنقاط واضحة، مع تقسيم منطقي:\n\n${lastAiReply}`;
+    addMessage("حوّل هذا الرد لقائمة مهام:\n" + lastAiReply, "user");
+    await callTextApi(prompt);
+  }
+
+  // تصدير المحادثة كلها PDF
+  function downloadConversationPdf() {
+    if (!currentConversation.length) {
+      alert("لا يوجد محتوى في المحادثة الحالية.");
+      return;
+    }
+    if (!window.jspdf || !window.jspdf.jsPDF) {
+      alert("مكتبة PDF غير محملة.");
+      return;
+    }
+    const { jsPDF } = window.jspdf;
+    const doc       = new jsPDF({ orientation: "p", unit: "pt", format: "a4" });
+
+    const margin    = 40;
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const maxWidth  = pageWidth - margin * 2;
+
+    const lines = [];
+    currentConversation.forEach((m) => {
+      const prefix = m.sender === "user" ? "محمود: " : "المساعد: ";
+      const chunk  = prefix + m.text;
+      const wrapped = doc.splitTextToSize(chunk, maxWidth);
+      lines.push(...wrapped, ""); // سطر فاصل
+    });
+
+    doc.text(lines, margin, margin);
+    doc.save("mahmoud_ai_chat.pdf");
   }
 </script>
 
