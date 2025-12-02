@@ -4,7 +4,14 @@
   <meta charset="UTF-8" />
   <title>محمود | مساعد الذكاء الاصطناعي</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- خط عربي جميل -->
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet" />
+
+  <!-- مكتبة jsPDF لتوليد PDF في المتصفح -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
+          integrity="sha512-/8aAqjF7kDbDeihdj5Z8SGvtQvECOHc1HwNfTK8F1DYjwMYJN9WewtGaozvQNf1v9F9MaW1u5V7YxKp7rMTaBA=="
+          crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -239,12 +246,44 @@
     .typing-indicator {
       font-size: 12px;
       opacity: 0.7;
-      margin: 0 4px 8px;
+      margin: 0 4px 4px;
+      padding: 0 14px 4px;
       display: none;
     }
 
     .typing-indicator.visible {
       display: block;
+    }
+
+    .export-bar {
+      padding: 6px 12px;
+      border-top: 1px solid #18181b;
+      border-bottom: 1px solid #18181b;
+      background: #020617;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+    }
+
+    .export-bar span {
+      opacity: 0.8;
+    }
+
+    .export-btn {
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid #27272f;
+      background: #020617;
+      color: #e5e5e5;
+      cursor: not-allowed;
+      opacity: 0.4;
+    }
+
+    .export-btn.enabled {
+      cursor: pointer;
+      opacity: 1;
     }
 
     .input-area {
@@ -470,6 +509,13 @@
       المساعد يفكر في الرد...
     </div>
 
+    <div class="export-bar">
+      <span>تصدير آخر رد:</span>
+      <button id="btnTxt" class="export-btn" onclick="downloadAsTxt()" disabled>TXT</button>
+      <button id="btnDoc" class="export-btn" onclick="downloadAsDoc()" disabled>Word</button>
+      <button id="btnPdf" class="export-btn" onclick="downloadAsPdf()" disabled>PDF</button>
+    </div>
+
     <div class="input-area">
       <div class="input-main">
         <input id="chatInput" type="text" placeholder="اكتب رسالتك هنا..." />
@@ -502,22 +548,23 @@
 
 <script>
   // ===== إعدادات عامة =====
-  const API_CHAT = "https://atlas-ai-hrgs.onrender.com/api/chat";       // نص
-  const API_IMAGE = "https://atlas-ai-hrgs.onrender.com/api/image_chat"; // صورة
+  // عدّل الرابط إذا تغيّر اسم السيرفر في Render
+  const API_CHAT  = "https://atlas-ai-hrgs.onrender.com/api/chat";
+  const API_IMAGE = "https://atlas-ai-hrgs.onrender.com/api/image_chat";
 
-  const messagesEl = document.getElementById("messages");
-  const inputEl = document.getElementById("chatInput");
-  const sendBtn = document.getElementById("sendBtn");
-  const typingEl = document.getElementById("typingIndicator");
-  const imageInput = document.getElementById("imageInput");
-  const imageHint = document.getElementById("imageHint");
+  const messagesEl  = document.getElementById("messages");
+  const inputEl     = document.getElementById("chatInput");
+  const sendBtn     = document.getElementById("sendBtn");
+  const typingEl    = document.getElementById("typingIndicator");
+  const imageInput  = document.getElementById("imageInput");
+  const imageHint   = document.getElementById("imageHint");
   const savedListEl = document.getElementById("savedConversations");
 
   document.getElementById("year").textContent = new Date().getFullYear();
 
-  // === إدارة المحادثة الحالية والحفظ ===
+  let lastAiReply = "";
   let currentConversation = [];
-  let savedConversations = [];
+  let savedConversations  = [];
 
   function addMessage(text, sender, addToMemory = true) {
     const div = document.createElement("div");
@@ -532,6 +579,12 @@
         text,
         ts: Date.now(),
       });
+    }
+
+    // لو الرد من الـ AI نخزّنه للتصدير
+    if (sender === "ai") {
+      lastAiReply = text;
+      updateExportButtons();
     }
   }
 
@@ -587,8 +640,8 @@
     }
   });
 
-  // رسالة ترحيب أولية
-  addMessage("أهلاً محمود 👋\nأنا مساعدك الذكي. اكتب سؤالك هنا أو اختر أداة من القائمة على اليمين.", "ai");
+  // رسالة ترحيب أول مرة
+  addMessage("أهلاً محمود 👋\nأنا مساعدك الذكي. اكتب سؤالك هنا أو اختر أداة من القائمة على اليمين.", "ai", true);
 
   // ===== حفظ المحادثات في localStorage =====
   function loadSavedConversations() {
@@ -606,8 +659,8 @@
     if (!savedConversations.length) {
       const span = document.createElement("span");
       span.style.fontSize = "11px";
-      span.style.opacity = "0.6";
-      span.textContent = "لا توجد محادثات محفوظة بعد.";
+      span.style.opacity   = "0.6";
+      span.textContent     = "لا توجد محادثات محفوظة بعد.";
       savedListEl.appendChild(span);
       return;
     }
@@ -617,16 +670,19 @@
       .forEach((conv) => {
         const btn = document.createElement("button");
         btn.className = "saved-item";
-        btn.onclick = () => loadConversation(conv.id);
-        const title = conv.title || "محادثة بدون عنوان";
-        const date = new Date(conv.createdAt).toLocaleString("ar-JO");
+        btn.onclick   = () => loadConversation(conv.id);
+        const title   = conv.title || "محادثة بدون عنوان";
+        const date    = new Date(conv.createdAt).toLocaleString("ar-JO");
         btn.innerHTML = `<div>${title}</div><span>${date}</span>`;
         savedListEl.appendChild(btn);
       });
   }
 
   function saveCurrentConversation() {
-    if (!currentConversation.length) return alert("لا يوجد محتوى لحفظه.");
+    if (!currentConversation.length) {
+      alert("لا يوجد محتوى لحفظه.");
+      return;
+    }
 
     const firstUserMsg = currentConversation.find((m) => m.sender === "user");
     const title = firstUserMsg ? firstUserMsg.text.slice(0, 24) + "..." : "محادثة محفوظة";
@@ -648,20 +704,28 @@
     const conv = savedConversations.find((c) => c.id === id);
     if (!conv) return;
 
-    messagesEl.innerHTML = "";
-    currentConversation = conv.messages.slice(); // نسخة
+    messagesEl.innerHTML   = "";
+    currentConversation    = conv.messages.slice();
+    lastAiReply            = "";
     currentConversation.forEach((m) => {
       addMessage(m.text, m.sender, false);
+      if (m.sender === "ai") {
+        lastAiReply = m.text; // آخر رد من AI
+      }
     });
+    updateExportButtons();
   }
 
   function clearConversation() {
     messagesEl.innerHTML = "";
-    currentConversation = [];
-    addMessage("بدأنا محادثة جديدة ✅\nاكتب سؤالك أو اختر أداة من القائمة.", "ai");
+    currentConversation  = [];
+    lastAiReply          = "";
+    addMessage("بدأنا محادثة جديدة ✅\nاكتب سؤالك أو اختر أداة من القائمة.", "ai", true);
+    updateExportButtons();
   }
 
   loadSavedConversations();
+  updateExportButtons();
 
   // ===== أدوات السايدبار =====
   let currentTool = null;
@@ -713,17 +777,17 @@
     },
   };
 
-  const modalBackdrop = document.getElementById("toolModalBackdrop");
-  const modalTitle = document.getElementById("toolModalTitle");
-  const modalDesc = document.getElementById("toolModalDesc");
-  const modalTextarea = document.getElementById("toolModalTextarea");
+  const modalBackdrop  = document.getElementById("toolModalBackdrop");
+  const modalTitle     = document.getElementById("toolModalTitle");
+  const modalDesc      = document.getElementById("toolModalDesc");
+  const modalTextarea  = document.getElementById("toolModalTextarea");
 
   function openToolModal(toolKey) {
     currentTool = toolKey;
-    const cfg = TOOL_CONFIG[toolKey];
-    modalTitle.textContent = cfg.title;
-    modalDesc.textContent = cfg.desc;
-    modalTextarea.value = "";
+    const cfg   = TOOL_CONFIG[toolKey];
+    modalTitle.textContent    = cfg.title;
+    modalDesc.textContent     = cfg.desc;
+    modalTextarea.value       = "";
     modalBackdrop.classList.add("visible");
   }
 
@@ -765,7 +829,7 @@
     const rawText = modalTextarea.value.trim();
     if (!currentTool || !rawText) return;
 
-    const cfg = TOOL_CONFIG[currentTool];
+    const cfg        = TOOL_CONFIG[currentTool];
     const toolPrompt = buildToolPrompt(currentTool, rawText);
 
     addMessage(`[${cfg.title}]\n${rawText}`, "user");
@@ -796,7 +860,7 @@
 
       await callImageApi(base64Data, text);
       imageHint.textContent = "";
-      imageInput.value = "";
+      imageInput.value      = "";
     };
     reader.readAsDataURL(file);
   });
@@ -829,6 +893,63 @@
       hideTyping();
       addMessage("⚠ حدث خطأ أثناء تحليل الصورة.", "ai");
     }
+  }
+
+  // ===== أزرار التصدير =====
+  function updateExportButtons() {
+    const has = !!(lastAiReply && lastAiReply.trim());
+    ["btnTxt", "btnDoc", "btnPdf"].forEach((id) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      if (has) {
+        el.disabled = false;
+        el.classList.add("enabled");
+      } else {
+        el.disabled = true;
+        el.classList.remove("enabled");
+      }
+    });
+  }
+
+  function downloadFile(filename, content, mimeType) {
+    const blob = new Blob([content], { type: mimeType });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement("a");
+    a.href     = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  function downloadAsTxt() {
+    if (!lastAiReply || !lastAiReply.trim()) return;
+    downloadFile("mahmoud_ai_note.txt", lastAiReply, "text/plain;charset=utf-8");
+  }
+
+  function downloadAsDoc() {
+    if (!lastAiReply || !lastAiReply.trim()) return;
+    const rtf = "{\\rtf1\\ansi\n" + lastAiReply.replace(/\n/g, "\\par\n") + "\n}";
+    downloadFile("mahmoud_ai_note.doc", rtf, "application/rtf");
+  }
+
+  function downloadAsPdf() {
+    if (!lastAiReply || !lastAiReply.trim()) return;
+    if (!window.jspdf || !window.jspdf.jsPDF) {
+      alert("مكتبة PDF غير محملة.");
+      return;
+    }
+    const { jsPDF } = window.jspdf;
+    const doc       = new jsPDF({ orientation: "p", unit: "pt", format: "a4" });
+
+    const margin    = 40;
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const maxWidth  = pageWidth - margin * 2;
+
+    const lines = doc.splitTextToSize(lastAiReply, maxWidth);
+    doc.text(lines, margin, margin);
+    doc.save("mahmoud_ai_note.pdf");
   }
 </script>
 
