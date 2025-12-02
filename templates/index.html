@@ -8,6 +8,10 @@
   <!-- خط عربي جميل -->
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet" />
 
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-auth-compat.js"></script>
+
   <!-- مكتبة jsPDF لتوليد PDF في المتصفح -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
           integrity="sha512-/8aAqjF7kDbDeihdj5Z8SGvtQvECOHc1HwNfTK8F1DYjwMYJN9WewtGaozvQNf1v9F9MaW1u5V7YxKp7rMTaBA=="
@@ -531,6 +535,28 @@
 <header>
   <h1>محمود – مساعدك الذكي</h1>
   <p>مساعد طالب عربي: نوتات + مهام + وقت + صحة + PDF + صور + إنجليزي + رياضيات</p>
+
+  <div style="margin-top:8px; display:flex; gap:8px; justify-content:center; align-items:center; flex-wrap:wrap;">
+    <!-- معلومات المستخدم بعد تسجيل الدخول -->
+    <div id="userInfo" style="display:none; align-items:center; gap:8px;">
+      <img id="userPhoto" src="" alt="user" style="width:26px; height:26px; border-radius:50%; border:1px solid #27272f; object-fit:cover;">
+      <span id="userName" style="font-size:12px;"></span>
+    </div>
+
+    <!-- زر تسجيل الدخول -->
+    <button id="loginBtn"
+            onclick="loginWithGoogle()"
+            style="font-size:11px; padding:5px 10px; border-radius:999px; border:1px solid #27272f; background:#020617; color:#e5e5e5; cursor:pointer;">
+      تسجيل دخول بحساب Google
+    </button>
+
+    <!-- زر تسجيل الخروج -->
+    <button id="logoutBtn"
+            onclick="logoutFromGoogle()"
+            style="display:none; font-size:11px; padding:5px 10px; border-radius:999px; border:1px solid #27272f; background:#020617; color:#e5e5e5; cursor:pointer;">
+      تسجيل الخروج
+    </button>
+  </div>
 </header>
 
 <main class="layout">
@@ -605,7 +631,7 @@
     <!-- Saved conversations -->
     <div class="saved-list">
       <div class="saved-title-row">
-        <span class="saved-title">محادثات محفوظة</span>
+        <span class="saved-title">محادثات محفوظة (على هذا الجهاز)</span>
         <select id="savedFilter" onchange="changeFilter(this.value)">
           <option value="all">الكل</option>
           <option value="notes">نوتات</option>
@@ -702,6 +728,70 @@
 </div>
 
 <script>
+  // ===== Firebase Config & Init =====
+  // هذا الكونفيغ من مشروعك في Firebase
+  const firebaseConfig = {
+    apiKey: "AIzaSyAqW7jLuYCig9M-R-0by1bMLoUZYs55VtQ",
+    authDomain: "mahmoud-ai-ce938.firebaseapp.com",
+    projectId: "mahmoud-ai-ce938",
+    storageBucket: "mahmoud-ai-ce938.firebasestorage.app",
+    messagingSenderId: "705709424722",
+    appId: "1:705709424722:web:8811208d6023235dac9f8b",
+    measurementId: "G-WMV1DF9VB5"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  let currentUser = null;
+
+  function loginWithGoogle() {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    auth.signInWithPopup(provider)
+      .then((result) => {
+        console.log("Logged in:", result.user);
+      })
+      .catch((error) => {
+        console.error("Login error:", error);
+        alert("حدث خطأ أثناء تسجيل الدخول.");
+      });
+  }
+
+  function logoutFromGoogle() {
+    auth.signOut()
+      .then(() => {
+        console.log("Logged out");
+      })
+      .catch((error) => {
+        console.error("Logout error:", error);
+      });
+  }
+
+  auth.onAuthStateChanged((user) => {
+    currentUser = user;
+    const loginBtn  = document.getElementById("loginBtn");
+    const logoutBtn = document.getElementById("logoutBtn");
+    const userInfo  = document.getElementById("userInfo");
+    const userName  = document.getElementById("userName");
+    const userPhoto = document.getElementById("userPhoto");
+
+    if (user) {
+      loginBtn.style.display  = "none";
+      logoutBtn.style.display = "inline-block";
+      userInfo.style.display  = "flex";
+
+      userName.textContent = "أهلاً، " + (user.displayName || "مستخدم");
+      if (user.photoURL) {
+        userPhoto.src = user.photoURL;
+      }
+    } else {
+      loginBtn.style.display  = "inline-block";
+      logoutBtn.style.display = "none";
+      userInfo.style.display  = "none";
+      userName.textContent    = "";
+      userPhoto.src           = "";
+    }
+  });
+
   // ===== إعدادات عامة =====
   const API_CHAT  = "https://atlas-ai-hrgs.onrender.com/api/chat";
   const API_IMAGE = "https://atlas-ai-hrgs.onrender.com/api/image_chat";
@@ -850,7 +940,7 @@
     true
   );
 
-  // ===== حفظ المحادثات =====
+  // ===== حفظ المحادثات (localStorage فقط) =====
   function loadSavedConversations() {
     try {
       const raw = localStorage.getItem("mahmoud_ai_conversations") || "[]";
@@ -930,7 +1020,7 @@
     savedConversations.push(conv);
     localStorage.setItem("mahmoud_ai_conversations", JSON.stringify(savedConversations));
     renderSavedConversations();
-    alert("✅ تم حفظ المحادثة بنجاح.");
+    alert("✅ تم حفظ المحادثة (محلياً على هذا الجهاز).");
   }
 
   function loadConversation(id) {
@@ -996,14 +1086,12 @@
     document.getElementById("modeDeep").classList.toggle("active", mode === "deep");
   }
 
-  // ===== Profiles (طالب جامعة / مدرسة / مبرمج / موظف / إنجليزي / رياضيات) =====
+  // ===== Profiles =====
   function setProfile(profile) {
     currentProfile = profile;
-    // لو حاب تخزن آخر اختيار في localStorage:
     localStorage.setItem("mahmoud_ai_profile", profile);
   }
 
-  // استرجاع آخر profile لو محفوظ
   (function initProfile() {
     const savedProf = localStorage.getItem("mahmoud_ai_profile");
     if (savedProf) {
@@ -1297,7 +1385,6 @@
     await callTextApi(prompt);
   }
 
-  // تصدير المحادثة كلها PDF
   function downloadConversationPdf() {
     if (!currentConversation.length) {
       alert("لا يوجد محتوى في المحادثة الحالية.");
@@ -1319,7 +1406,7 @@
       const prefix = m.sender === "user" ? "محمود: " : "المساعد: ";
       const chunk  = prefix + m.text;
       const wrapped = doc.splitTextToSize(chunk, maxWidth);
-      lines.push(...wrapped, ""); // سطر فاصل
+      lines.push(...wrapped, "");
     });
 
     doc.text(lines, margin, margin);
