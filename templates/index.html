@@ -66,6 +66,10 @@
       border-radius: 18px;
       padding: 14px 12px;
       box-shadow: 0 16px 40px rgba(0, 0, 0, 0.8);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: 100%;
     }
 
     .sidebar-title {
@@ -77,7 +81,7 @@
     .sidebar-sub {
       font-size: 11px;
       opacity: 0.7;
-      margin-bottom: 10px;
+      margin-bottom: 6px;
     }
 
     .tool-group-title {
@@ -119,6 +123,42 @@
       transform: translateY(0);
     }
 
+    .saved-list {
+      margin-top: 6px;
+      max-height: 180px;
+      overflow-y: auto;
+      border-top: 1px solid #18181b;
+      padding-top: 6px;
+    }
+
+    .saved-title {
+      font-size: 12px;
+      opacity: 0.8;
+      margin-bottom: 4px;
+    }
+
+    .saved-item {
+      width: 100%;
+      text-align: right;
+      padding: 6px 9px;
+      margin-bottom: 4px;
+      border-radius: 999px;
+      border: 1px solid #27272f;
+      background: #020617;
+      color: #d4d4d8;
+      font-size: 11px;
+      cursor: pointer;
+      outline: none;
+      display: flex;
+      justify-content: space-between;
+      gap: 6px;
+    }
+
+    .saved-item span {
+      font-size: 10px;
+      opacity: 0.7;
+    }
+
     /* ====== CHAT AREA ====== */
 
     .chat-wrapper {
@@ -149,6 +189,21 @@
     .chat-header-sub {
       font-size: 11px;
       opacity: 0.7;
+    }
+
+    .chat-header-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .mini-btn {
+      font-size: 11px;
+      padding: 5px 10px;
+      border-radius: 999px;
+      border: 1px solid #27272f;
+      background: #020617;
+      color: #e5e5e5;
+      cursor: pointer;
     }
 
     .messages {
@@ -199,9 +254,17 @@
       display: flex;
       gap: 8px;
       align-items: center;
+      flex-wrap: wrap;
     }
 
-    .input-area input {
+    .input-main {
+      display: flex;
+      flex: 1;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .input-area input[type="text"] {
       flex: 1;
       padding: 10px 12px;
       border-radius: 999px;
@@ -212,7 +275,7 @@
       outline: none;
     }
 
-    .input-area button {
+    .input-area button.send-btn {
       padding: 9px 18px;
       border-radius: 999px;
       border: none;
@@ -221,6 +284,24 @@
       color: #fff;
       font-size: 13px;
       font-weight: 600;
+    }
+
+    .input-area .img-btn {
+      font-size: 11px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid #27272f;
+      background: #020617;
+      color: #e5e5e5;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .image-hint {
+      font-size: 11px;
+      opacity: 0.7;
+      flex-basis: 100%;
+      margin-top: 4px;
     }
 
     footer {
@@ -321,45 +402,53 @@
 
   <!-- ===== SIDEBAR TOOLS ===== -->
   <aside class="sidebar">
-    <div class="sidebar-title">الأدوات الذكية</div>
-    <div class="sidebar-sub">اختر أداة وسيقوم المساعد بإنجاز المهمة تلقائياً.</div>
+    <div>
+      <div class="sidebar-title">الأدوات الذكية</div>
+      <div class="sidebar-sub">اختر أداة وسيقوم المساعد بإنجاز المهمة تلقائياً.</div>
 
-    <div class="tool-group-title">أدوات النوتة والكتابة</div>
-    <button class="tool-btn" onclick="openToolModal('summary')">
-      تلخيص النوتة <span>Summarize</span>
-    </button>
-    <button class="tool-btn" onclick="openToolModal('improve')">
-      تحسين الكتابة <span>Improve</span>
-    </button>
-    <button class="tool-btn" onclick="openToolModal('new_text')">
-      كتابة نص جديد حسب طلبك <span>Generate</span>
-    </button>
-    <button class="tool-btn" onclick="openToolModal('autocomplete')">
-      إكمال النص تلقائياً <span>Continue</span>
-    </button>
-    <button class="tool-btn" onclick="openToolModal('note_full')">
-      إنشاء نوتة كاملة جاهزة <span>Full note</span>
-    </button>
-    <button class="tool-btn" onclick="openToolModal('bullet_to_para')">
-      تحويل النقاط → فقرة <span>Bullets → Paragraph</span>
-    </button>
-    <button class="tool-btn" onclick="openToolModal('ask_about_note')">
-      سؤال AI عن محتوى النوتة <span>Ask note</span>
-    </button>
+      <div class="tool-group-title">أدوات النوتة والكتابة</div>
+      <button class="tool-btn" onclick="openToolModal('summary')">
+        تلخيص النوتة <span>Summarize</span>
+      </button>
+      <button class="tool-btn" onclick="openToolModal('improve')">
+        تحسين الكتابة <span>Improve</span>
+      </button>
+      <button class="tool-btn" onclick="openToolModal('new_text')">
+        كتابة نص جديد حسب طلبك <span>Generate</span>
+      </button>
+      <button class="tool-btn" onclick="openToolModal('autocomplete')">
+        إكمال النص تلقائياً <span>Continue</span>
+      </button>
+      <button class="tool-btn" onclick="openToolModal('note_full')">
+        إنشاء نوتة كاملة جاهزة <span>Full note</span>
+      </button>
+      <button class="tool-btn" onclick="openToolModal('bullet_to_para')">
+        تحويل النقاط → فقرة <span>Bullets → Paragraph</span>
+      </button>
+      <button class="tool-btn" onclick="openToolModal('ask_about_note')">
+        سؤال AI عن محتوى النوتة <span>Ask note</span>
+      </button>
 
-    <div class="tool-group-title" style="margin-top: 12px;">نمط الحياة والإنتاجية</div>
-    <button class="tool-btn" onclick="openToolModal('planner')">
-      Planner AI للمهام <span>Tasks plan</span>
-    </button>
-    <button class="tool-btn" onclick="openToolModal('health')">
-      Health AI للروتين اليومي <span>Health</span>
-    </button>
-    <button class="tool-btn" onclick="openToolModal('pomodoro')">
-      Pomodoro AI لإدارة الوقت <span>Focus</span>
-    </button>
-    <button class="tool-btn" onclick="openToolModal('pdf')">
-      تحليل ملف PDF بالنص <span>PDF text</span>
-    </button>
+      <div class="tool-group-title" style="margin-top: 12px;">نمط الحياة والإنتاجية</div>
+      <button class="tool-btn" onclick="openToolModal('planner')">
+        Planner AI للمهام <span>Tasks plan</span>
+      </button>
+      <button class="tool-btn" onclick="openToolModal('health')">
+        Health AI للروتين اليومي <span>Health</span>
+      </button>
+      <button class="tool-btn" onclick="openToolModal('pomodoro')">
+        Pomodoro AI لإدارة الوقت <span>Focus</span>
+      </button>
+      <button class="tool-btn" onclick="openToolModal('pdf')">
+        تحليل ملف PDF بالنص <span>PDF text</span>
+      </button>
+    </div>
+
+    <!-- Saved conversations -->
+    <div class="saved-list">
+      <div class="saved-title">محادثات محفوظة</div>
+      <div id="savedConversations"></div>
+    </div>
   </aside>
 
   <!-- ===== CHAT ===== -->
@@ -369,22 +458,26 @@
         <div class="chat-header-title">شات الذكاء الاصطناعي</div>
         <div class="chat-header-sub">محمود AI – متصل بسيرفر atlas-ai</div>
       </div>
-    </div>
-
-    <div id="messages" class="messages">
-      <div class="msg ai">
-        أهلاً محمود 👋<br>
-        أنا مساعدك الذكي. اكتب سؤالك هنا أو اختر أداة من القائمة على اليمين.
+      <div class="chat-header-actions">
+        <button class="mini-btn" onclick="saveCurrentConversation()">حفظ المحادثة</button>
+        <button class="mini-btn" onclick="clearConversation()">محادثة جديدة</button>
       </div>
     </div>
+
+    <div id="messages" class="messages"></div>
 
     <div id="typingIndicator" class="typing-indicator">
       المساعد يفكر في الرد...
     </div>
 
     <div class="input-area">
-      <input id="chatInput" type="text" placeholder="اكتب رسالتك هنا..." />
-      <button id="sendBtn">إرسال</button>
+      <div class="input-main">
+        <input id="chatInput" type="text" placeholder="اكتب رسالتك هنا..." />
+        <button id="sendBtn" class="send-btn">إرسال</button>
+      </div>
+      <button class="img-btn" onclick="triggerImagePicker()">📷 إرسال صورة</button>
+      <input id="imageInput" type="file" accept="image/*" style="display:none" />
+      <div class="image-hint" id="imageHint"></div>
     </div>
   </section>
 
@@ -409,21 +502,37 @@
 
 <script>
   // ===== إعدادات عامة =====
-  const API_URL = "https://atlas-ai-hrgs.onrender.com/api/chat"; // عدلها لو تغيّر رابط السيرفر
+  const API_CHAT = "https://atlas-ai-hrgs.onrender.com/api/chat";       // نص
+  const API_IMAGE = "https://atlas-ai-hrgs.onrender.com/api/image_chat"; // صورة
 
   const messagesEl = document.getElementById("messages");
   const inputEl = document.getElementById("chatInput");
   const sendBtn = document.getElementById("sendBtn");
   const typingEl = document.getElementById("typingIndicator");
+  const imageInput = document.getElementById("imageInput");
+  const imageHint = document.getElementById("imageHint");
+  const savedListEl = document.getElementById("savedConversations");
 
   document.getElementById("year").textContent = new Date().getFullYear();
 
-  function addMessage(text, sender) {
+  // === إدارة المحادثة الحالية والحفظ ===
+  let currentConversation = [];
+  let savedConversations = [];
+
+  function addMessage(text, sender, addToMemory = true) {
     const div = document.createElement("div");
     div.className = "msg " + sender;
     div.textContent = text;
     messagesEl.appendChild(div);
     messagesEl.scrollTop = messagesEl.scrollHeight;
+
+    if (addToMemory) {
+      currentConversation.push({
+        sender,
+        text,
+        ts: Date.now(),
+      });
+    }
   }
 
   function showTyping() {
@@ -440,14 +549,14 @@
 
     addMessage(text, "user");
     inputEl.value = "";
-    await callApi(text);
+    await callTextApi(text);
   }
 
-  async function callApi(messageText) {
+  async function callTextApi(messageText) {
     try {
       showTyping();
 
-      const res = await fetch(API_URL, {
+      const res = await fetch(API_CHAT, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: messageText }),
@@ -477,6 +586,82 @@
       sendMessage();
     }
   });
+
+  // رسالة ترحيب أولية
+  addMessage("أهلاً محمود 👋\nأنا مساعدك الذكي. اكتب سؤالك هنا أو اختر أداة من القائمة على اليمين.", "ai");
+
+  // ===== حفظ المحادثات في localStorage =====
+  function loadSavedConversations() {
+    try {
+      const raw = localStorage.getItem("mahmoud_ai_conversations") || "[]";
+      savedConversations = JSON.parse(raw);
+    } catch {
+      savedConversations = [];
+    }
+    renderSavedConversations();
+  }
+
+  function renderSavedConversations() {
+    savedListEl.innerHTML = "";
+    if (!savedConversations.length) {
+      const span = document.createElement("span");
+      span.style.fontSize = "11px";
+      span.style.opacity = "0.6";
+      span.textContent = "لا توجد محادثات محفوظة بعد.";
+      savedListEl.appendChild(span);
+      return;
+    }
+    savedConversations
+      .slice()
+      .reverse()
+      .forEach((conv) => {
+        const btn = document.createElement("button");
+        btn.className = "saved-item";
+        btn.onclick = () => loadConversation(conv.id);
+        const title = conv.title || "محادثة بدون عنوان";
+        const date = new Date(conv.createdAt).toLocaleString("ar-JO");
+        btn.innerHTML = `<div>${title}</div><span>${date}</span>`;
+        savedListEl.appendChild(btn);
+      });
+  }
+
+  function saveCurrentConversation() {
+    if (!currentConversation.length) return alert("لا يوجد محتوى لحفظه.");
+
+    const firstUserMsg = currentConversation.find((m) => m.sender === "user");
+    const title = firstUserMsg ? firstUserMsg.text.slice(0, 24) + "..." : "محادثة محفوظة";
+
+    const conv = {
+      id: Date.now(),
+      title,
+      createdAt: Date.now(),
+      messages: currentConversation,
+    };
+
+    savedConversations.push(conv);
+    localStorage.setItem("mahmoud_ai_conversations", JSON.stringify(savedConversations));
+    renderSavedConversations();
+    alert("✅ تم حفظ المحادثة بنجاح.");
+  }
+
+  function loadConversation(id) {
+    const conv = savedConversations.find((c) => c.id === id);
+    if (!conv) return;
+
+    messagesEl.innerHTML = "";
+    currentConversation = conv.messages.slice(); // نسخة
+    currentConversation.forEach((m) => {
+      addMessage(m.text, m.sender, false);
+    });
+  }
+
+  function clearConversation() {
+    messagesEl.innerHTML = "";
+    currentConversation = [];
+    addMessage("بدأنا محادثة جديدة ✅\nاكتب سؤالك أو اختر أداة من القائمة.", "ai");
+  }
+
+  loadSavedConversations();
 
   // ===== أدوات السايدبار =====
   let currentTool = null;
@@ -583,11 +768,67 @@
     const cfg = TOOL_CONFIG[currentTool];
     const toolPrompt = buildToolPrompt(currentTool, rawText);
 
-    // عرض رسالة المستخدم في الشات توضح أنه استخدم أداة
     addMessage(`[${cfg.title}]\n${rawText}`, "user");
     closeToolModal();
 
-    await callApi(toolPrompt);
+    await callTextApi(toolPrompt);
+  }
+
+  // ===== إرسال الصور =====
+  function triggerImagePicker() {
+    imageInput.click();
+  }
+
+  imageInput.addEventListener("change", async () => {
+    const file = imageInput.files[0];
+    if (!file) return;
+
+    imageHint.textContent = "📷 تم اختيار صورة، يتم الآن رفعها وتحليلها...";
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const base64Data = reader.result.split(",")[1];
+
+      // نأخذ النص المكتوب (لو موجود) كتعليمات إضافية
+      const text = inputEl.value.trim();
+      inputEl.value = "";
+
+      addMessage(text ? `🔍 تحليل صورة مع النص:\n${text}` : "🔍 إرسال صورة للتحليل...", "user");
+
+      await callImageApi(base64Data, text);
+      imageHint.textContent = "";
+      imageInput.value = "";
+    };
+    reader.readAsDataURL(file);
+  });
+
+  async function callImageApi(imageBase64, messageText) {
+    try {
+      showTyping();
+
+      const res = await fetch(API_IMAGE, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: messageText || "",
+          image: imageBase64,
+        }),
+      });
+
+      const data = await res.json();
+      hideTyping();
+
+      if (data.reply) {
+        addMessage(data.reply, "ai");
+      } else if (data.text) {
+        addMessage(data.text, "ai");
+      } else {
+        addMessage("تم استلام الرد لكن تعذر قراءته.", "ai");
+      }
+    } catch (err) {
+      console.error(err);
+      hideTyping();
+      addMessage("⚠ حدث خطأ أثناء تحليل الصورة.", "ai");
+    }
   }
 </script>
 
