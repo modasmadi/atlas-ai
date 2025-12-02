@@ -260,6 +260,8 @@
       justify-content: space-between;
       align-items: center;
       font-size: 13px;
+      gap: 10px;
+      flex-wrap: wrap;
     }
 
     .chat-header-title {
@@ -276,6 +278,7 @@
       flex-wrap: wrap;
       gap: 6px;
       justify-content: flex-end;
+      align-items: center;
     }
 
     .mini-btn {
@@ -292,6 +295,17 @@
       background: #22c1c3;
       border-color: #22c1c3;
       color: #000;
+    }
+
+    .mini-select {
+      font-size: 11px;
+      padding: 5px 10px;
+      border-radius: 999px;
+      border: 1px solid #27272f;
+      background: #020617;
+      color: #e5e5e5;
+      cursor: pointer;
+      outline: none;
     }
 
     .messages {
@@ -516,7 +530,7 @@
 
 <header>
   <h1>محمود – مساعدك الذكي</h1>
-  <p>مساعد طالب عربي: نوتات + مهام + وقت + صحة + PDF + صور</p>
+  <p>مساعد طالب عربي: نوتات + مهام + وقت + صحة + PDF + صور + إنجليزي + رياضيات</p>
 </header>
 
 <main class="layout">
@@ -629,6 +643,17 @@
           <button id="modeTurbo" class="mini-btn mode-btn active" onclick="setMode('turbo')">Turbo</button>
           <button id="modeDeep" class="mini-btn mode-btn" onclick="setMode('deep')">دقيق</button>
         </div>
+
+        <div>
+          <select id="profileSelect" class="mini-select" onchange="setProfile(this.value)">
+            <option value="uni">طالب جامعة 🎓</option>
+            <option value="school">طالب مدرسة 📘</option>
+            <option value="it">مبرمج / IT 💻</option>
+            <option value="work">موظف / إنتاجية 🗂️</option>
+            <option value="english">مساعد إنجليزي 🇬🇧</option>
+            <option value="math">مساعد رياضيات ➗</option>
+          </select>
+        </div>
       </div>
     </div>
 
@@ -696,6 +721,7 @@
   let savedConversations   = [];
   let currentFilter        = "all";
   let currentMode          = "turbo";
+  let currentProfile       = "uni";
   let imagePresetPrompt    = "";
 
   // Pomodoro
@@ -784,7 +810,11 @@
       const res = await fetch(API_CHAT, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: messageText, mode: currentMode }),
+        body: JSON.stringify({
+          message: messageText,
+          mode: currentMode,
+          profile: currentProfile,
+        }),
       });
 
       const data = await res.json();
@@ -813,7 +843,12 @@
   });
 
   // رسالة ترحيب أول مرة
-  addMessage("أهلاً محمود 👋\nجاهز نخلي شغلك أسهل اليوم؟ 😎\nاكتب سؤالك أو اختر أداة من القائمة على اليمين.", "ai", true);
+  addMessage(
+    "أهلاً محمود 👋\nجاهز نخلي شغلك أسهل اليوم؟ 😎\n" +
+    "اختر نوعك من القائمة (طالب جامعة، مدرسة، مبرمج، موظف، إنجليزي، رياضيات) حسب الحاجة.",
+    "ai",
+    true
+  );
 
   // ===== حفظ المحادثات =====
   function loadSavedConversations() {
@@ -918,7 +953,12 @@
     messagesEl.innerHTML = "";
     currentConversation  = [];
     lastAiReply          = "";
-    addMessage("بدأنا محادثة جديدة ✅\nاكتب سؤالك أو اختر أداة من القائمة.", "ai", true);
+    addMessage(
+      "بدأنا محادثة جديدة ✅\n" +
+      "اكتب سؤالك أو اختر أداة من القائمة، ولا تنسَ اختيار نوعك من فوق (جامعة/مدرسة/مبرمج/موظف/إنجليزي/رياضيات).",
+      "ai",
+      true
+    );
     updateExportButtons();
   }
 
@@ -955,6 +995,23 @@
     document.getElementById("modeTurbo").classList.toggle("active", mode === "turbo");
     document.getElementById("modeDeep").classList.toggle("active", mode === "deep");
   }
+
+  // ===== Profiles (طالب جامعة / مدرسة / مبرمج / موظف / إنجليزي / رياضيات) =====
+  function setProfile(profile) {
+    currentProfile = profile;
+    // لو حاب تخزن آخر اختيار في localStorage:
+    localStorage.setItem("mahmoud_ai_profile", profile);
+  }
+
+  // استرجاع آخر profile لو محفوظ
+  (function initProfile() {
+    const savedProf = localStorage.getItem("mahmoud_ai_profile");
+    if (savedProf) {
+      currentProfile = savedProf;
+      const sel = document.getElementById("profileSelect");
+      if (sel) sel.value = savedProf;
+    }
+  })();
 
   // ===== أدوات النوتة (Sidebar Tools) =====
   let currentTool = null;
@@ -1155,6 +1212,7 @@
           message: messageText || "",
           image: imageBase64,
           mode: currentMode,
+          profile: currentProfile,
         }),
       });
 
