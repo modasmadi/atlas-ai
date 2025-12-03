@@ -354,38 +354,6 @@
       display: block;
     }
 
-    .export-bar {
-      padding: 6px 12px;
-      border-top: 1px solid #18181b;
-      border-bottom: 1px solid #18181b;
-      background: #020617;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 11px;
-      flex-wrap: wrap;
-    }
-
-    .export-bar span {
-      opacity: 0.8;
-    }
-
-    .export-btn {
-      font-size: 11px;
-      padding: 4px 10px;
-      border-radius: 999px;
-      border: 1px solid #27272f;
-      background: #020617;
-      color: #e5e5e5;
-      cursor: not-allowed;
-      opacity: 0.4;
-    }
-
-    .export-btn.enabled {
-      cursor: pointer;
-      opacity: 1;
-    }
-
     .input-area {
       padding: 10px;
       border-top: 1px solid #18181b;
@@ -709,14 +677,7 @@
       المساعد يفكر في الرد...
     </div>
 
-    <div class="export-bar">
-      <span>تصدير آخر رد:</span>
-      <button id="btnTxt" class="export-btn" onclick="downloadAsTxt()" disabled>TXT</button>
-      <button id="btnDoc" class="export-btn" onclick="downloadAsDoc()" disabled>Word</button>
-      <button id="btnPdf" class="export-btn" onclick="downloadAsPdf()" disabled>PDF</button>
-      <button id="btnTodo" class="export-btn" onclick="convertReplyToTodo()" disabled>To-Do</button>
-    </div>
-
+    <!-- بدون شريط تصدير آخر رد -->
     <div class="input-area">
       <div class="input-main">
         <input id="chatInput" type="text" placeholder="اكتب رسالتك هنا..." />
@@ -903,7 +864,6 @@
 
     if (sender === "ai") {
       lastAiReply = text;
-      updateExportButtons();
     }
   }
 
@@ -1066,7 +1026,6 @@
         lastAiReply = m.text;
       }
     });
-    updateExportButtons();
   }
 
   function clearConversation() {
@@ -1078,7 +1037,6 @@
       "ai",
       true
     );
-    updateExportButtons();
   }
 
   function renameConversation(id, ev) {
@@ -1106,7 +1064,6 @@
   }
 
   loadSavedConversations();
-  updateExportButtons();
 
   // أوضاع الرد
   function setMode(mode) {
@@ -1308,7 +1265,6 @@
 
       imagePresetPrompt = "";
 
-      // تظهر كرسالة من المستخدم مع أيقونة الكاميرا
       addMessage("📷 " + usedPrompt, "user");
 
       await callImageApi(base64Data, usedPrompt);
@@ -1351,22 +1307,6 @@
     }
   }
 
-  // أزرار التصدير
-  function updateExportButtons() {
-    const has = !!(lastAiReply && lastAiReply.trim());
-    ["btnTxt", "btnDoc", "btnPdf", "btnTodo"].forEach((id) => {
-      const el = document.getElementById(id);
-      if (!el) return;
-      if (has) {
-        el.disabled = false;
-        el.classList.add("enabled");
-      } else {
-        el.disabled = true;
-        el.classList.remove("enabled");
-      }
-    });
-  }
-
   function downloadFile(filename, content, mimeType) {
     const blob = new Blob([content], { type: mimeType });
     const url  = URL.createObjectURL(blob);
@@ -1377,42 +1317,6 @@
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-  }
-
-  function downloadAsTxt() {
-    if (!lastAiReply || !lastAiReply.trim()) return;
-    downloadFile("mahmoud_ai_note.txt", lastAiReply, "text/plain;charset=utf-8");
-  }
-
-  function downloadAsDoc() {
-    if (!lastAiReply || !lastAiReply.trim()) return;
-    const rtf = "{\\rtf1\\ansi\n" + lastAiReply.replace(/\n/g, "\\par\n") + "\n}";
-    downloadFile("mahmoud_ai_note.doc", rtf, "application/rtf");
-  }
-
-  function downloadAsPdf() {
-    if (!lastAiReply || !lastAiReply.trim()) return;
-    if (!window.jspdf || !window.jspdf.jsPDF) {
-      alert("مكتبة PDF غير محملة.");
-      return;
-    }
-    const { jsPDF } = window.jspdf;
-    const doc       = new jsPDF({ orientation: "p", unit: "pt", format: "a4" });
-
-    const margin    = 40;
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const maxWidth  = pageWidth - margin * 2;
-
-    const lines = doc.splitTextToSize(lastAiReply, maxWidth);
-    doc.text(lines, margin, margin);
-    doc.save("mahmoud_ai_note.pdf");
-  }
-
-  async function convertReplyToTodo() {
-    if (!lastAiReply || !lastAiReply.trim()) return;
-    const prompt = `حوّل المحتوى التالي إلى قائمة مهام (To-Do list) بنقاط واضحة، مع تقسيم منطقي:\n\n${lastAiReply}`;
-    addMessage("حوّل هذا الرد لقائمة مهام:\n" + lastAiReply, "user");
-    await callTextApi(prompt);
   }
 
   function downloadConversationPdf() {
