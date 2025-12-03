@@ -5,14 +5,14 @@
   <title>محمود | مساعد الذكاء الاصطناعي</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <!-- خط عربي جميل -->
+  <!-- خط عربي -->
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet" />
 
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-auth-compat.js"></script>
 
-  <!-- مكتبة jsPDF لتوليد PDF في المتصفح -->
+  <!-- jsPDF لتوليد PDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
           integrity="sha512-/8aAqjF7kDbDeihdj5Z8SGvtQvECOHc1HwNfTK8F1DYjwMYJN9WewtGaozvQNf1v9F9MaW1u5V7YxKp7rMTaBA=="
           crossorigin="anonymous" referrerpolicy="no-referrer"></script>
@@ -69,7 +69,7 @@
       }
     }
 
-    /* ====== SIDEBAR ====== */
+    /* SIDEBAR */
 
     .sidebar {
       background: #050505;
@@ -243,7 +243,7 @@
       cursor: pointer;
     }
 
-    /* ====== CHAT AREA ====== */
+    /* CHAT */
 
     .chat-wrapper {
       background: #050505;
@@ -451,7 +451,7 @@
       border-top: 1px solid #18181b;
     }
 
-    /* ====== TOOL MODAL ====== */
+    /* MODAL */
 
     .modal-backdrop {
       position: fixed;
@@ -537,20 +537,20 @@
   <p>مساعد طالب عربي: نوتات + مهام + وقت + صحة + PDF + صور + إنجليزي + رياضيات</p>
 
   <div style="margin-top:8px; display:flex; gap:8px; justify-content:center; align-items:center; flex-wrap:wrap;">
-    <!-- معلومات المستخدم بعد تسجيل الدخول -->
+    <!-- معلومات المستخدم -->
     <div id="userInfo" style="display:none; align-items:center; gap:8px;">
       <img id="userPhoto" src="" alt="user" style="width:26px; height:26px; border-radius:50%; border:1px solid #27272f; object-fit:cover;">
       <span id="userName" style="font-size:12px;"></span>
     </div>
 
-    <!-- زر تسجيل الدخول -->
+    <!-- تسجيل الدخول -->
     <button id="loginBtn"
             onclick="loginWithGoogle()"
             style="font-size:11px; padding:5px 10px; border-radius:999px; border:1px solid #27272f; background:#020617; color:#e5e5e5; cursor:pointer;">
       تسجيل دخول بحساب Google
     </button>
 
-    <!-- زر تسجيل الخروج -->
+    <!-- تسجيل الخروج -->
     <button id="logoutBtn"
             onclick="logoutFromGoogle()"
             style="display:none; font-size:11px; padding:5px 10px; border-radius:999px; border:1px solid #27272f; background:#020617; color:#e5e5e5; cursor:pointer;">
@@ -561,13 +561,12 @@
 
 <main class="layout">
 
-  <!-- ===== SIDEBAR TOOLS ===== -->
+  <!-- SIDEBAR -->
   <aside class="sidebar">
     <div>
       <div class="sidebar-title">الأدوات الذكية</div>
       <div class="sidebar-sub">اختر أداة وسيقوم المساعد بإنجاز المهمة تلقائياً.</div>
 
-      <!-- Presets -->
       <div class="tool-group-title">أوضاع جاهزة (Presets)</div>
       <button class="tool-btn" onclick="presetLectureImage()">
         لخّص صورة محاضرة <span>Lecture → Note</span>
@@ -628,7 +627,7 @@
       </button>
     </div>
 
-    <!-- Saved conversations -->
+    <!-- المحفوظات -->
     <div class="saved-list">
       <div class="saved-title-row">
         <span class="saved-title">محادثات محفوظة (على هذا الجهاز)</span>
@@ -642,7 +641,7 @@
       <div id="savedConversations"></div>
     </div>
 
-    <!-- Pomodoro Timer -->
+    <!-- Pomodoro -->
     <div class="pomodoro">
       <div class="pomodoro-title">مؤقت التركيز (Pomodoro)</div>
       <div id="pomodoroTime">25:00</div>
@@ -651,10 +650,30 @@
         <button onclick="pausePomodoro()">إيقاف</button>
         <button onclick="resetPomodoro()">إعادة</button>
       </div>
+      <div style="display:flex; gap:4px; margin-top:6px; align-items:center;">
+        <input
+          id="pomodoroMinutesInput"
+          type="number"
+          min="1"
+          max="180"
+          value="25"
+          style="flex:1; font-size:10px; padding:3px 6px; border-radius:999px;
+                 border:1px solid #27272f; background:#020617; color:#e5e5e5;
+                 text-align:center;"
+        />
+        <button
+          onclick="applyPomodoroMinutes()"
+          style="font-size:10px; padding:3px 8px; border-radius:999px;
+                 border:1px solid #27272f; background:#020617; color:#e5e5e5;
+                 cursor:pointer;"
+        >
+          تعيين الدقائق
+        </button>
+      </div>
     </div>
   </aside>
 
-  <!-- ===== CHAT ===== -->
+  <!-- CHAT -->
   <section class="chat-wrapper">
     <div class="chat-header">
       <div>
@@ -678,6 +697,7 @@
             <option value="work">موظف / إنتاجية 🗂️</option>
             <option value="english">مساعد إنجليزي 🇬🇧</option>
             <option value="math">مساعد رياضيات ➗</option>
+            <option value="answer_only">أجوبة فقط ✅</option>
           </select>
         </div>
       </div>
@@ -714,7 +734,7 @@
   © <span id="year"></span> محمود – الذكاء الاصطناعي الخاص بك
 </footer>
 
-<!-- ===== TOOL MODAL ===== -->
+<!-- TOOL MODAL -->
 <div id="toolModalBackdrop" class="modal-backdrop">
   <div class="modal">
     <div class="modal-title" id="toolModalTitle">أداة</div>
@@ -728,8 +748,7 @@
 </div>
 
 <script>
-  // ===== Firebase Config & Init =====
-  // هذا الكونفيغ من مشروعك في Firebase
+  // Firebase config
   const firebaseConfig = {
     apiKey: "AIzaSyAqW7jLuYCig9M-R-0by1bMLoUZYs55VtQ",
     authDomain: "mahmoud-ai-ce938.firebaseapp.com",
@@ -792,7 +811,7 @@
     }
   });
 
-  // ===== إعدادات عامة =====
+  // إعدادات عامة
   const API_CHAT  = "https://atlas-ai-hrgs.onrender.com/api/chat";
   const API_IMAGE = "https://atlas-ai-hrgs.onrender.com/api/image_chat";
 
@@ -852,9 +871,21 @@
     updatePomodoroDisplay();
   }
 
+  function applyPomodoroMinutes() {
+    const input = document.getElementById("pomodoroMinutesInput");
+    const val   = parseInt(input.value, 10);
+    if (isNaN(val) || val <= 0) {
+      alert("اكتب عدد دقائق صحيحاً (أكبر من صفر).");
+      return;
+    }
+    pomodoroDuration  = val * 60;
+    pomodoroRemaining = pomodoroDuration;
+    updatePomodoroDisplay();
+  }
+
   updatePomodoroDisplay();
 
-  // ===== رسائل الشات =====
+  // رسائل الشات
   function addMessage(text, sender, addToMemory = true) {
     const div = document.createElement("div");
     div.className = "msg " + sender;
@@ -932,15 +963,14 @@
     }
   });
 
-  // رسالة ترحيب أول مرة
+  // رسالة ترحيب
   addMessage(
-    "أهلاً محمود 👋\nجاهز نخلي شغلك أسهل اليوم؟ 😎\n" +
-    "اختر نوعك من القائمة (طالب جامعة، مدرسة، مبرمج، موظف، إنجليزي، رياضيات) حسب الحاجة.",
+    "أهلاً محمود 👋\nجاهز نخلي شغلك أسهل اليوم؟ 😎\nاختر نوعك من القائمة (طالب جامعة، مدرسة، مبرمج، موظف، إنجليزي، رياضيات، أجوبة فقط) حسب الحاجة.",
     "ai",
     true
   );
 
-  // ===== حفظ المحادثات (localStorage فقط) =====
+  // حفظ المحادثات في localStorage
   function loadSavedConversations() {
     try {
       const raw = localStorage.getItem("mahmoud_ai_conversations") || "[]";
@@ -1044,8 +1074,7 @@
     currentConversation  = [];
     lastAiReply          = "";
     addMessage(
-      "بدأنا محادثة جديدة ✅\n" +
-      "اكتب سؤالك أو اختر أداة من القائمة، ولا تنسَ اختيار نوعك من فوق (جامعة/مدرسة/مبرمج/موظف/إنجليزي/رياضيات).",
+      "بدأنا محادثة جديدة ✅\nاكتب سؤالك أو اختر أداة من القائمة، ولا تنسَ اختيار نوعك من فوق (جامعة/مدرسة/مبرمج/موظف/إنجليزي/رياضيات/أجوبة فقط).",
       "ai",
       true
     );
@@ -1079,14 +1108,14 @@
   loadSavedConversations();
   updateExportButtons();
 
-  // ===== أوضاع الرد (Turbo / دقيق) =====
+  // أوضاع الرد
   function setMode(mode) {
     currentMode = mode;
     document.getElementById("modeTurbo").classList.toggle("active", mode === "turbo");
     document.getElementById("modeDeep").classList.toggle("active", mode === "deep");
   }
 
-  // ===== Profiles =====
+  // Profiles
   function setProfile(profile) {
     currentProfile = profile;
     localStorage.setItem("mahmoud_ai_profile", profile);
@@ -1101,7 +1130,7 @@
     }
   })();
 
-  // ===== أدوات النوتة (Sidebar Tools) =====
+  // أدوات النوتة (Modal)
   let currentTool = null;
 
   const TOOL_CONFIG = {
@@ -1212,7 +1241,7 @@
     await callTextApi(toolPrompt);
   }
 
-  // ===== Presets و Templates =====
+  // Presets & Templates
   function presetLectureImage() {
     imagePresetPrompt = "لخّص محتوى هذه الصورة كأنها سلايدات محاضرة، واستخرج أهم الأفكار في شكل نوتة منظمة للامتحان.";
     triggerImagePicker();
@@ -1255,7 +1284,7 @@
     inputEl.focus();
   }
 
-  // ===== إرسال الصور =====
+  // إرسال الصور (مع نص مثل واتساب)
   function triggerImagePicker() {
     imageInput.click();
   }
@@ -1272,17 +1301,18 @@
       const text = inputEl.value.trim();
       inputEl.value = "";
 
-      const usedPrompt = imagePresetPrompt || text;
+      const usedPrompt =
+        imagePresetPrompt ||
+        text ||
+        "حلل هذه الصورة وأعطني شرحاً واضحاً أو الإجابة الصحيحة إن كانت سؤالاً.";
+
       imagePresetPrompt = "";
 
-      addMessage(
-        usedPrompt
-          ? `🔍 تحليل صورة مع التعليمات:\n${usedPrompt}`
-          : "🔍 إرسال صورة للتحليل...",
-        "user"
-      );
+      // تظهر كرسالة من المستخدم مع أيقونة الكاميرا
+      addMessage("📷 " + usedPrompt, "user");
 
       await callImageApi(base64Data, usedPrompt);
+
       imageHint.textContent = "";
       imageInput.value      = "";
     };
@@ -1321,7 +1351,7 @@
     }
   }
 
-  // ===== أزرار التصدير (آخر رد) =====
+  // أزرار التصدير
   function updateExportButtons() {
     const has = !!(lastAiReply && lastAiReply.trim());
     ["btnTxt", "btnDoc", "btnPdf", "btnTodo"].forEach((id) => {
