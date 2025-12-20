@@ -1,212 +1,341 @@
-import os
-import base64
-import io
+/**
+ * ATLAS AI NOTE - Logic V4
+ * Features: Auth Simulation, File Uploads, Multilingual AI, Advanced Formatting
+ */
 
-from flask import Flask, render_template, request, jsonify
-from flask_cors import CORS
-import google.generativeai as genai
-from PIL import Image
+// --- Data Store ---
+const Store = {
+    getNotes() { const n = localStorage.getItem('atlas-notes'); return n ? JSON.parse(n) : []; },
+    saveNotes(n) { localStorage.setItem('atlas-notes', JSON.stringify(n)); },
+    getMeta() { const m = localStorage.getItem('atlas-meta'); return m ? JSON.parse(m) : { theme: 'dark' }; },
+    saveMeta(m) { localStorage.setItem('atlas-meta', JSON.stringify(m)); },
+    getUser() { const u = localStorage.getItem('atlas-user'); return u ? JSON.parse(u) : null; },
+    saveUser(u) { localStorage.setItem('atlas-user', JSON.stringify(u)); },
 
-app = Flask(__name__)
-CORS(app, resources={r"/api/*": {"origins": "*"}})
+    createNote() {
+        const notes = this.getNotes();
+        const newNote = { id: Date.now().toString(), title: '', content: '', cover: null, updatedAt: Date.now() };
+        notes.unshift(newNote);
+        this.saveNotes(notes);
+        return newNote;
+    },
+    updateNote(id, updates) {
+        const notes = this.getNotes();
+        const idx = notes.findIndex(n => n.id === id);
+        if (idx > -1) {
+            notes[idx] = { ...notes[idx], ...updates, updatedAt: Date.now() };
+            this.saveNotes(notes);
+            return notes[idx];
+        }
+        return null;
+    },
+    getNote(id) { return this.getNotes().find(n => n.id === id); }
+};
 
-# مفتاح Gemini من Environment (GEMINI_API_KEY)
-GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "").strip()
+// --- App State ---
+let activeNoteId = null;
 
-if GEMINI_API_KEY:
-    genai.configure(api_key=GEMINI_API_KEY)
+// --- DOM Elements ---
+const app = document.getElementById('app');
+const loginOverlay = document.getElementById('login-overlay');
+const userNameDisplay = document.getElementById('user-name');
+const userAvatarDisplay = document.getElementById('user-avatar');
 
-# نستخدم نفس الموديل في كل الطلبات
-MODEL_NAME = "gemini-2.5-flash"
+const noteListEl = document.getElementById('note-list');
+const addNoteBtn = document.getElementById('add-note-btn');
+const editorView = document.getElementById('editor-view');
+const emptyState = document.getElementById('empty-state');
+const toolbar = document.getElementById('toolbar');
 
+const titleInput = document.getElementById('note-title');
+const bodyInput = document.getElementById('note-body');
+const coverContainer = document.getElementById('cover-container');
+const coverImg = document.getElementById('cover-img');
+const addCoverBtn = document.getElementById('add-cover-btn');
+const changeCoverBtn = document.querySelector('.change-cover-btn');
+const fileInput = document.getElementById('file-upload-input');
 
-def build_style_from_mode(mode: str) -> str:
-    """
-    يرجّع جملة أسلوب الكتابة حسب النمط:
-    - turbo: ردود مختصرة وسريعة
-    - deep: ردود مفصلة ومنظمة
-    """
-    mode = (mode or "turbo").lower()
-    if mode == "deep":
-        return (
-            "أجب بإجابات مفصلة ومنظمة بعناوين فرعية ونقاط، "
-            "واستخدم أمثلة عند الحاجة، وركّز على أن تكون الإجابة شاملة."
-        )
-    else:
-        return (
-            "أجب بإجابات مختصرة ومركزة وواضحة قدر الإمكان، "
-            "بدون حشو زائد، مع توضيح الفكرة الأساسية بسرعة."
-        )
+const themeBtns = document.querySelectorAll('.theme-btn');
+const slashMenu = document.getElementById('slash-menu');
 
-
-def build_profile_prompt(profile: str) -> str:
-    """
-    برومبت أساسي يعتمد على نوع المستخدم / الوضع (Profile).
-    القيم المتوقعة من الفرونت:
-      - uni      : طالب جامعة 🎓
-      - school   : طالب مدرسة / توجيهي 📘
-      - it       : مبرمج / IT 💻
-      - work     : موظف / إنتاجية 🗂️
-      - english  : مساعد أسئلة إنجليزي 🇬🇧
-      - math     : مساعد رياضيات ➗
-    """
-    p = (profile or "uni").lower()
-
-    if p == "school":
-        return (
-            "أنت مساعد لطالب مدرسة/توجيهي. اشرح الدروس بالعربية بأسلوب مبسط جداً، "
-            "مع أمثلة بسيطة، ويمكنك أيضاً تقديم أسئلة اختيار من متعدد مع الإجابات."
-        )
-    elif p == "it":
-        return (
-            "أنت مساعد لمبرمج أو طالب IT. تشرح الأكواد، الأخطاء، المفاهيم البرمجية "
-            "والشبكات وقواعد البيانات، مع أمثلة عملية. استخدم العربية في الشرح، "
-            "ويمكنك كتابة الأكواد بالإنجليزية."
-        )
-    elif p == "work":
-        return (
-            "أنت مساعد لموظف/إنتاجية. تساعد في تنظيم المهام، كتابة الإيميلات، "
-            "تلخيص الاجتماعات، ووضع خطط عمل وجداول يومية وأسبوعية."
-        )
-    elif p == "english":
-        return (
-            "أنت مساعد لحل أسئلة اللغة الإنجليزية. تساعد في القواعد، المفردات، "
-            "كتابة وترجمة الجمل، وحل الأسئلة، مع شرح بالعربية عند الحاجة. "
-            "اعطِ الجواب بالإنجليزية متبوعاً بشرح بسيط بالعربية."
-        )
-    elif p == "math":
-        return (
-            "أنت مساعد رياضيات لجميع المراحل (مدرسية وجامعية). "
-            "حل مسائل الرياضيات خطوة بخطوة، واشرح المنطق وراء كل خطوة بالعربية، "
-            "ويمكنك استخدام رموز رياضية واضحة، وإذا كان السؤال من صورة فافترض أنه يحتوي "
-            "على مسألة رياضيات أو تعبيرات عددية أو رموز، وحاول استخراجها وحلّها."
-        )
-    else:  # uni (طالب جامعة) كافتراضي
-        return (
-            "أنت مساعد لطالب جامعة. تركز على تلخيص المحاضرات والكتب، "
-            "وشرح المفاهيم الجامعية، وتحضير نوتات للامتحانات، "
-            "ويمكنك أيضاً اقتراح أسئلة وأجوبة للمراجعة."
-        )
+// AI
+const aiFab = document.getElementById('ai-fab');
+const aiSidebar = document.getElementById('ai-sidebar');
+const aiCloseBtn = document.querySelector('.ai-close-btn');
+const aiMessages = document.getElementById('ai-messages');
+const aiInput = document.getElementById('ai-input');
+const aiSendBtn = document.getElementById('ai-send');
+const aiAttachBtn = document.getElementById('ai-attach-btn');
 
 
-@app.route("/")
-def index():
-    return render_template("index.html")
+// --- Init ---
+function init() {
+    checkLogin();
+    const meta = Store.getMeta();
+    setTheme(meta.theme);
+    renderNoteList();
+    renderEditor();
+}
+
+// --- Auth Logic ---
+function checkLogin() {
+    const user = Store.getUser();
+    if (user) {
+        loginOverlay.classList.add('hidden');
+        userNameDisplay.textContent = user.name;
+        userAvatarDisplay.textContent = user.initial;
+    } else {
+        loginOverlay.classList.remove('hidden');
+    }
+}
+
+function login(provider) {
+    // Simulate Login
+    const mockUser = {
+        name: provider === 'Apple' ? 'Apple User' : 'M',
+        initial: provider === 'Apple' ? '' : 'M',
+        provider: provider
+    };
+    Store.saveUser(mockUser);
+    checkLogin();
+}
+
+document.getElementById('btn-google').addEventListener('click', () => login('Google'));
+document.getElementById('btn-facebook').addEventListener('click', () => login('Facebook'));
+document.getElementById('btn-apple').addEventListener('click', () => login('Apple'));
 
 
-@app.route("/api/chat", methods=["POST"])
-def api_chat():
-    """
-    شات نصّي عادي (بدون صور)
-    يستقبل: { "message": "..." , "mode": "turbo" | "deep", "profile": "uni|school|it|work|english|math" }
-    يرجع:   { "reply": "..." }
-    """
-    try:
-        if not GEMINI_API_KEY:
-            return jsonify({
-                "error": "missing_key",
-                "message": "GEMINI_API_KEY not set!"
-            }), 500
+// --- Theme ---
+function setTheme(themeName) {
+    document.documentElement.setAttribute('data-theme', themeName);
+    themeBtns.forEach(btn => {
+        if (btn.dataset.setTheme === themeName) btn.classList.add('active');
+        else btn.classList.remove('active');
+    });
+    if (['light', 'dark', 'oled'].includes(themeName)) Store.saveMeta({ theme: themeName });
+}
+themeBtns.forEach(btn => btn.addEventListener('click', () => setTheme(btn.dataset.setTheme)));
 
-        payload = request.get_json() or {}
-        user_msg = (payload.get("message") or "").strip()
-        mode = (payload.get("mode") or "turbo").lower()
-        profile = (payload.get("profile") or "uni").lower()
+// --- Core Editor ---
+function renderNoteList() {
+    const notes = Store.getNotes();
+    noteListEl.innerHTML = '';
+    notes.forEach(note => {
+        const li = document.createElement('li');
+        li.className = `note-item ${note.id === activeNoteId ? 'active' : ''}`;
+        li.innerHTML = `<span class="note-icon">📄</span><span class="note-title-preview">${note.title || 'Untitled'}</span>`;
+        if (!note.title) li.querySelector('.note-title-preview').style.opacity = '0.5';
+        li.addEventListener('click', () => setActiveNote(note.id));
+        noteListEl.appendChild(li);
+    });
+}
 
-        if not user_msg:
-            return jsonify({"reply": "اكتب رسالة أولاً علشان أقدر أساعدك 😊"})
+function renderEditor() {
+    if (!activeNoteId) {
+        editorView.classList.add('hidden');
+        toolbar.classList.remove('visible');
+        emptyState.classList.remove('hidden');
+        return;
+    }
+    const note = Store.getNote(activeNoteId);
+    if (!note) { setActiveNote(null); return; }
 
-        style_text = build_style_from_mode(mode)
-        profile_text = build_profile_prompt(profile)
+    editorView.classList.remove('hidden');
+    toolbar.classList.add('visible');
+    emptyState.classList.add('hidden');
 
-        system_prompt = (
-            "أنت مساعد ذكاء اصطناعي خاص بالمستخدم محمود. "
-            "تتكيف مع احتياجاته الدراسيّة والشخصية حسب نوع الملف الشخصي (Profile).\n\n"
-            f"{profile_text}\n\n"
-            f"{style_text}\n"
-        )
+    if (titleInput.value !== note.title) titleInput.value = note.title || '';
+    if (document.activeElement !== bodyInput) bodyInput.innerHTML = note.content || '';
 
-        full_prompt = f"{system_prompt}\nرسالة المستخدم:\n{user_msg}"
+    if (note.cover) {
+        coverContainer.classList.add('has-image');
+        coverImg.src = note.cover;
+        addCoverBtn.style.display = 'none';
+    } else {
+        coverContainer.classList.remove('has-image');
+        addCoverBtn.style.display = 'flex';
+    }
+}
 
-        model = genai.GenerativeModel(MODEL_NAME)
-        response = model.generate_content(full_prompt)
+function setActiveNote(id) {
+    activeNoteId = id;
+    const note = Store.getNote(id);
+    if (note) {
+        titleInput.value = note.title || '';
+        bodyInput.innerHTML = note.content || '';
+        if (!note.title && !note.content) titleInput.focus();
+    }
+    renderNoteList();
+    renderEditor();
+}
 
-        reply_text = response.text or "تعذّر الحصول على رد من النموذج."
+addNoteBtn.addEventListener('click', () => {
+    const newNote = Store.createNote();
+    setActiveNote(newNote.id);
+});
+titleInput.addEventListener('input', (e) => {
+    if (activeNoteId) {
+        Store.updateNote(activeNoteId, { title: e.target.value });
+        const activeItem = document.querySelector(`.note-item[data-id="${activeNoteId}"] .note-title-preview`);
+        renderNoteList();
+    }
+});
+bodyInput.addEventListener('input', (e) => {
+    if (activeNoteId) Store.updateNote(activeNoteId, { content: e.target.innerHTML });
+});
 
-        return jsonify({"reply": reply_text})
+// --- File Upload Logic ---
+// We repurpose the single file input for both Cover and Inline Images
+let uploadTarget = null; // 'cover' or 'inline'
 
-    except Exception as e:
-        print("Backend Error (chat):", str(e), flush=True)
-        return jsonify({"error": "backend_exception", "message": str(e)}), 500
+function handleFileUpload(file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const dataUrl = e.target.result;
+        if (uploadTarget === 'cover') {
+            Store.updateNote(activeNoteId, { cover: dataUrl });
+            renderEditor();
+        } else if (uploadTarget === 'inline') {
+            const html = `<div class="inline-image-wrapper"><img src="${dataUrl}" class="inline-image" contenteditable="false"></div><p><br></p>`;
+            document.execCommand('insertHTML', false, html);
+        }
+    };
+    reader.readAsDataURL(file);
+}
 
+fileInput.addEventListener('change', (e) => {
+    if (e.target.files && e.target.files[0]) {
+        handleFileUpload(e.target.files[0]);
+    }
+    fileInput.value = ''; // reset
+});
 
-@app.route("/api/image_chat", methods=["POST"])
-def api_image_chat():
-    """
-    شات مع صورة:
-    يستقبل: { "message": "...اختياري...", "image": "<BASE64>", "mode": "turbo" | "deep", "profile": "uni|school|it|work|english|math" }
-    يرجع:   { "reply": "..." }
-    """
-    try:
-        if not GEMINI_API_KEY:
-            return jsonify({
-                "error": "missing_key",
-                "message": "GEMINI_API_KEY not set!"
-            }), 500
+addCoverBtn.addEventListener('click', () => {
+    if (activeNoteId) {
+        uploadTarget = 'cover';
+        fileInput.click();
+    }
+});
+changeCoverBtn.addEventListener('click', () => {
+    if (activeNoteId) {
+        uploadTarget = 'cover';
+        fileInput.click();
+    }
+});
 
-        payload = request.get_json() or {}
-        user_msg = (payload.get("message") or "").strip()
-        image_b64 = payload.get("image")
-        mode = (payload.get("mode") or "turbo").lower()
-        profile = (payload.get("profile") or "uni").lower()
+// --- Formatting ---
+document.querySelectorAll('.tool-btn').forEach(btn => {
+    btn.addEventListener('click', () => { document.execCommand(btn.dataset.cmd, false, null); bodyInput.focus(); });
+});
+document.getElementById('text-color').addEventListener('change', (e) => {
+    document.execCommand('foreColor', false, e.target.value);
+    bodyInput.focus();
+});
+document.getElementById('font-family').addEventListener('change', (e) => {
+    document.execCommand('fontName', false, e.target.value);
+    bodyInput.focus();
+});
 
-        if not image_b64:
-            return jsonify({
-                "error": "no_image",
-                "message": "No image data provided."
-            }), 400
+// --- Slash Command ---
+bodyInput.addEventListener('keyup', (e) => { if (e.key === '/') showSlashMenu(); });
+document.addEventListener('click', (e) => { if (!slashMenu.contains(e.target) && e.target !== bodyInput) slashMenu.classList.remove('visible'); });
 
-        style_text = build_style_from_mode(mode)
-        profile_text = build_profile_prompt(profile)
+function showSlashMenu() {
+    const sel = window.getSelection();
+    if (sel.rangeCount > 0) {
+        const rect = sel.getRangeAt(0).getBoundingClientRect();
+        slashMenu.style.top = `${rect.bottom + window.scrollY}px`;
+        slashMenu.style.left = `${rect.left + window.scrollX}px`;
+        slashMenu.classList.add('visible');
+    }
+}
 
-        # فك تشفير الصورة من Base64
-        img_bytes = base64.b64decode(image_b64)
-        image = Image.open(io.BytesIO(img_bytes))
+slashMenu.addEventListener('click', (e) => {
+    const item = e.target.closest('.slash-item');
+    if (!item) return;
+    document.execCommand('delete', false, null); // remove slash
+    insertBlock(item.dataset.type);
+    slashMenu.classList.remove('visible');
+});
 
-        base_system = (
-            "أنت مساعد ذكاء اصطناعي خاص بمحمود. "
-            "تستقبل صوراً (مثل صور المحاضرات، السلايدات، الملاحظات المكتوبة، أو مسائل الرياضيات والصور التعليمية) "
-            "وتستخرج منها أهم المعلومات التي يحتاجها حسب نوع الملف الشخصي (Profile).\n\n"
-        )
+function insertBlock(type) {
+    let html = '';
+    switch (type) {
+        case 'h1': html = '<h1>Heading 1</h1><p><br></p>'; break;
+        case 'h2': html = '<h2>Heading 2</h2><p><br></p>'; break;
+        case 'text': html = '<p>Text block</p>'; break;
+        case 'todo': html = `<div class="todo-block"><input type="checkbox" class="todo-checkbox"><div class="todo-text" contenteditable="true">To-do item</div></div><p><br></p>`; break;
+        case 'bullet': html = `<ul><li>List item</li></ul><p><br></p>`; break;
+        case 'callout': html = `<div class="callout-block"><div class="callout-icon">💡</div><div class="callout-content" contenteditable="true">Goal</div></div><p><br></p>`; break;
+        case 'calendar': html = generateCalendarWidget(); break;
+        case 'bg-yellow':
+            document.execCommand('insertHTML', false, '<span class="bg-yellow">Yellow Text</span>&nbsp;');
+            return;
+        case 'image-upload':
+            uploadTarget = 'inline';
+            fileInput.click();
+            return;
+        case 'ai': openAISidebar(); return;
+    }
+    if (html) document.execCommand('insertHTML', false, html);
+}
 
-        if not user_msg:
-            # في حال لم يرسل نصاً مع الصورة، نضع تعليمات افتراضية
-            user_msg = (
-                "حلّل هذه الصورة بالتفصيل، واشرح ما تحتويه، "
-                "ولو فيها نصوص أو مسائل اكتبه بالعربية في شكل منظم، "
-                "ثم جهّز المحتوى بحيث يكون مناسباً لملف PDF أو Word."
-            )
+function generateCalendarWidget() {
+    const now = new Date();
+    const month = now.toLocaleString('default', { month: 'long' });
+    const days = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+    let dHtml = '';
+    for (let i = 1; i <= days; i++) dHtml += `<div class="calendar-day ${i === now.getDate() ? 'today' : ''}">${i}</div>`;
+    return `<div class="calendar-widget" contenteditable="false"><div class="calendar-header">${month} ${now.getFullYear()}</div><div class="calendar-grid"><span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>${dHtml}</div></div><p><br></p>`;
+}
 
-        full_instruction = (
-            base_system
-            + profile_text + "\n\n"
-            + style_text + "\n\n"
-            + "تعليمات إضافية من المستخدم:\n"
-            + user_msg
-        )
+// --- AI Multilingual ---
+function openAISidebar() { aiSidebar.classList.add('open'); aiInput.focus(); }
+aiCloseBtn.addEventListener('click', () => aiSidebar.classList.remove('open'));
+aiFab.addEventListener('click', () => aiSidebar.classList.toggle('open'));
+aiSendBtn.addEventListener('click', sendMessage);
+aiInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
 
-        model = genai.GenerativeModel(MODEL_NAME)
-        response = model.generate_content([full_instruction, image])
+aiAttachBtn.addEventListener('click', () => {
+    // Simulate File selection
+    alert("Attach feature simulated: Choose a file to analyze (Dummy Action)");
+});
 
-        reply_text = response.text or "تعذّر قراءة رد النموذج على الصورة."
+function sendMessage() {
+    const text = aiInput.value.trim();
+    if (!text) return;
+    addMessage(text, 'user');
+    aiInput.value = '';
+    setTimeout(() => {
+        addMessage(generateAIResponse(text), 'bot');
+    }, 600);
+}
 
-        return jsonify({"reply": reply_text})
+function addMessage(text, sender) {
+    const d = document.createElement('div');
+    d.className = `ai-msg ${sender}`;
+    d.textContent = text;
+    aiMessages.appendChild(d);
+    aiMessages.scrollTop = aiMessages.scrollHeight;
+}
 
-    except Exception as e:
-        print("Backend Error (image_chat):", str(e), flush=True)
-        return jsonify({"error": "backend_exception", "message": str(e)}), 500
+function generateAIResponse(input) {
+    const isArabic = /[\u0600-\u06FF]/.test(input);
+    const lower = input.toLowerCase();
 
+    if (isArabic) {
+        if (lower.includes('مرحبا') || lower.includes('السلام')) return "أهلاً بك في أطلس! كيف يمكنني مساعدتك اليوم؟";
+        if (lower.includes('اسمك')) return "أنا أطلس، مساعدك الذكي.";
+        if (lower.includes('صورة')) return "لإضافة صورة، اكتب '/' واختر 'Upload Image'.";
+        if (lower.includes('تقويم')) return "يمكنك إضافة تقويم بكتابة '/calendar'.";
+        return "هذا مثير للاهتمام! أنا حالياً في النسخة التجريبية، لكن يمكنني مساعدتك في تنظيم ملاحظاتك.";
+    }
 
-if __name__ == "__main__":
-    # للتجربة محلياً فقط
-    app.run(host="0.0.0.0", port=5000)
+    if (lower.includes('hello') || lower.includes('hi')) return "Hello! I am ATLAS. How can I assist you?";
+    if (lower.includes('goal')) return "Try using the '/callout' command for goals!";
+    if (lower.includes('calendar')) return "Type '/calendar' to insert a widget.";
+    if (lower.includes('upload')) return "You can upload images using the slash menu!";
+    return "I'm here to help you navigate ATLAS. Try asking about features!";
+}
+
+init();
